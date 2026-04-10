@@ -1,0 +1,1154 @@
+/* ===== 应用卡片样式 ===== */
+
+/* 小工具容器 */
+.yyk-widget-container {
+    width: 100%;                 /* 宽度占满父容器 */
+    overflow: hidden;            /* 隐藏溢出内容 */
+    margin: 0px;               /* 外边距10px，抵消卡片外边距 */
+}
+
+/* 布局类型 */
+.yyk-layout-grid .yyk-widget-grid {
+    display: grid;              /* 使用网格布局 */
+    gap: 0;                     /* 网格项间距为0，卡片自带边距 */
+}
+
+.yyk-layout-list .yyk-widget-list {
+    display: flex;              /* 使用Flex布局 */
+    flex-direction: column;     /* 垂直方向排列 */
+    gap: 0px;                  /* 子元素间距10px */
+}
+
+/* 列数控制 */
+.yyk-widget-container.yyk-columns-1 .yyk-widget-grid {
+    grid-template-columns: repeat(1, 1fr);  /* 1列布局 */
+}
+
+.yyk-widget-container.yyk-columns-2 .yyk-widget-grid {
+    grid-template-columns: repeat(2, 1fr);  /* 2列布局 */
+}
+
+.yyk-widget-container.yyk-columns-3 .yyk-widget-grid {
+    grid-template-columns: repeat(3, 1fr);  /* 3列布局 */
+}
+
+.yyk-widget-container.yyk-columns-4 .yyk-widget-grid {
+    grid-template-columns: repeat(4, 1fr);  /* 4列布局 */
+}
+
+.yyk-widget-container.yyk-columns-5 .yyk-widget-grid {
+    grid-template-columns: repeat(5, 1fr);  /* 5列布局 */
+}
+
+.yyk-widget-container.yyk-columns-6 .yyk-widget-grid {
+    grid-template-columns: repeat(6, 1fr);  /* 6列布局 */
+}
+
+/* =========== 独立卡片样式 =========== */
+.yyk-template-card {
+    background: white;          /* 白色背景 */
+    border-radius: 12px;        /* 圆角12px */
+    overflow: hidden;           /* 隐藏溢出内容 */
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);  /* 阴影效果 */
+    border: 1px solid #e8e8e8;  /* 边框颜色 */
+    transition: all 0.3s ease;  /* 过渡动画0.3秒 */
+    margin: 5px 0px;               /* 外边距10px */
+    width: calc(100% - 10px);   /* 宽度减去左右边距 */
+    height: 170px;              /* 固定高度170px */
+    box-sizing: border-box;     /* 盒模型计算方式 */
+    display: flex;              /* 使用Flex布局 */
+}
+
+.yyk-template-card:hover {
+    transform: translateY(-5px);  /* 悬停时上移5px */
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);  /* 悬停时阴影加深 */
+}
+
+/* 独立卡片容器 */
+.yyk-template-card .yyk-card-inner {
+    display: flex;              /* 使用Flex布局 */
+    width: 100%;                /* 宽度100% */
+    height: 100%;               /* 高度100% */
+    padding: 10px 10px;              /* 内边距10px */
+}
+
+/* 独立卡片图标区域 - 固定在左侧 */
+.yyk-template-card .yyk-card-icon {
+    flex: 0 0 150px;            /* 固定宽度150px */
+    width: 150px;               /* 宽度150px */
+    height: 150px;              /* 高度150px */
+    margin-right: 10px;         /* 右边距10px */
+    position: relative;         /* 相对定位 */
+    overflow: hidden;           /* 隐藏溢出内容 */
+    border-radius: 10px;        /* 圆角10px */
+    background: #f8f9fa;        /* 浅灰色背景 */
+    display: flex;              /* 使用Flex布局 */
+    align-items: center;        /* 垂直居中 */
+    justify-content: center;    /* 水平居中 */
+}
+
+/* 独立卡片图标 - 铺满容器 */
+.yyk-template-card .yyk-card-icon img {
+    width: 100% !important;     /* 宽度100% */
+    height: 100% !important;    /* 高度100% */
+    object-fit: cover !important;  /* 图片填充方式 */
+    display: block !important;  /* 块级显示 */
+}
+
+/* 独立卡片内容区域 */
+.yyk-template-card .yyk-card-content {
+    flex: 1;                    /* 占据剩余空间 */
+    display: flex;              /* 使用Flex布局 */
+    flex-direction: column;     /* 垂直方向排列 */
+    min-width: 0;               /* 防止内容溢出 */
+}
+
+/* 第一行：应用标题 + 热门标签 */
+.yyk-template-card .yyk-card-header {
+    display: flex;              /* 使用Flex布局 */
+    justify-content: space-between;  /* 两端对齐 */
+    align-items: flex-start;    /* 顶部对齐 */
+    margin-bottom: 10px;        /* 底部外边距10px */
+}
+
+.yyk-template-card .yyk-card-title {
+    margin: 0;                  /* 外边距为0 */
+    font-size: 16px;            /* 字体大小16px */
+    font-weight: 600;           /* 字体粗细600 */
+    line-height: 1.3;           /* 行高1.3 */
+    color: #333;                /* 深灰色文字 */
+    flex: 1;                    /* 占据剩余空间 */
+    overflow: hidden;           /* 隐藏溢出内容 */
+    text-overflow: ellipsis;    /* 超出显示省略号 */
+    white-space: nowrap;        /* 不换行 */
+}
+
+.yyk-template-card .yyk-card-title a {
+    color: #333;                /* 深灰色链接 */
+    text-decoration: none;      /* 无下划线 */
+}
+
+.yyk-template-card .yyk-card-title a:hover {
+    color: #0073aa;             /* 悬停时蓝色链接 */
+}
+
+/* 热门标签 - 右上角 */
+.yyk-template-card .yyk-card-badges {
+    display: flex;              /* 使用Flex布局 */
+    gap: 5px;                   /* 标签间距5px */
+    margin-left: 10px;          /* 左边距10px */
+}
+
+.yyk-template-card .yyk-badge {
+    padding: 3px 8px;           /* 内边距：上下3px，左右8px */
+    font-size: 11px;            /* 字体大小11px */
+    font-weight: 600;           /* 字体粗细600 */
+    border-radius: 4px;         /* 圆角4px */
+    text-transform: uppercase;  /* 大写字母 */
+    white-space: nowrap;        /* 不换行 */
+}
+
+.yyk-template-card .yyk-badge.yyk-hot {
+    background: #ffeaea;        /* 红色背景 */
+    color: #e74c3c;             /* 红色文字 */
+}
+
+.yyk-template-card .yyk-badge.yyk-recommend {
+    background: #e8f4fc;        /* 蓝色背景 */
+    color: #3498db;             /* 蓝色文字 */
+}
+
+.yyk-template-card .yyk-badge.yyk-new {
+    background: #e8f8f0;        /* 绿色背景 */
+    color: #27ae60;             /* 绿色文字 */
+}
+
+/* 第二行：平台类型 */
+.yyk-template-card .yyk-platform-icons {
+    display: flex;              /* 使用Flex布局 */
+    gap: 20px;                  /* 子元素间距20px */
+    margin-bottom: 10px;        /* 底部外边距10px */
+    font-size: 20px;            /* 字体大小20px */
+}
+
+.yyk-platform-icon {
+    display: inline-flex;       /* 行内Flex布局 */
+    align-items: center;        /* 垂直居中 */
+    gap: 5px;                   /* 图标和文字间距5px */
+    background: #f5f7fa;        /* 浅灰色背景 */
+    padding: 4px 10px;          /* 内边距：上下4px，左右10px */
+    border-radius: 6px;         /* 圆角6px */
+    font-size: 13px;            /* 字体大小13px */
+    color: #666;                /* 深灰色文字 */
+}
+
+/* 基础图标样式 */
+.yyk-platform-icon::before {
+    content: "";                /* 伪元素内容为空 */
+    display: inline-block;      /* 行内块显示 */
+    width: 20px;                /* 宽度20px */
+    height: 20px;               /* 高度20px */
+    background-size: contain;   /* 背景图片包含 */
+    background-repeat: no-repeat;  /* 不重复背景 */
+    background-position: center;  /* 背景居中 */
+    flex-shrink: 0;             /* 不允许缩小 */
+}
+
+/* ========== 方法1：直接使用外部SVG链接 ========== */
+
+/* Android - 使用外部SVG */
+.yyk-platform-icon.android::before {
+    background-image: url('/img/an/安卓.svg');  /* Android图标路径 */
+    /* 或使用相对路径: url('/wp-content/plugins/your-plugin/icons/android.svg') */
+}
+
+/* iOS - 使用外部SVG */
+.yyk-platform-icon.ios::before {
+    background-image: url('/img/an/ios.svg');   /* iOS图标路径 */
+    /* 或: url('./icons/apple.svg') */
+}
+
+/* PC - 使用外部SVG */
+.yyk-platform-icon.pc::before {
+    background-image: url('/img/an/Windows.svg');  /* Windows图标路径 */
+}
+
+/* All - 使用外部SVG */
+.yyk-platform-icon.all::before {
+    /* 三个独立的图标文件 */
+    background-image: 
+        url('/img/an/安卓.svg'),    /* Android图标 */
+        url('/img/an/ios.svg'),     /* iOS图标 */
+        url('/img/an/Windows.svg'); /* Windows图标 */
+    
+    /* 分别设置大小（20px宽，20px高） */
+    background-size: 20px 20px, 20px 20px, 20px 20px;
+    
+    /* 关键：设置三个图标的位置（并排） */
+    background-position: 
+        0 center,      /* 第一个图标：最左边 */
+        20px center,   /* 第二个图标：中间 */
+        40px center;   /* 第三个图标：最右边 */
+    
+    background-repeat: no-repeat;  /* 不重复背景 */
+    
+    width: 80px;      /* 容纳三个图标的宽度 */
+    height: 20px;     /* 高度20px */
+}
+
+/* 第三行：版本号、文件大小、游戏类型 */
+.yyk-template-card .yyk-card-meta {
+    display: flex;              /* 使用Flex布局 */
+    gap: 6px;                   /* 子元素间距6px */
+    margin-bottom: 10px;        /* 底部外边距10px */
+    font-size: 13px;            /* 字体大小13px */
+    color: #666;                /* 深灰色文字 */
+}
+
+.yyk-template-card .yyk-meta-item {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background: #f8f9fa;
+    padding: 4px 5px;
+    border-radius: 6px;
+    white-space: nowrap;            /* 已经有不换行设置 */
+    /* 或者使用flex布局限制 */
+    flex-shrink: 1;                 /* 允许缩小 */
+    min-width: 0;                   /* 重要：允许缩小到0 */
+}
+
+.yyk-template-card .yyk-meta-label {
+    font-weight: 500;           /* 字体粗细500 */
+    color: #555;                /* 中灰色文字 */
+}
+
+.yyk-template-card .yyk-meta-value {
+    color: #333;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex-shrink: 1;                 /* 允许缩小 */
+    min-width: 0;
+}
+
+/* 第四行：按钮 */
+.yyk-template-card .yyk-card-actions {
+    display: flex;              /* 使用Flex布局 */
+    gap: 15px;                  /* 按钮间距15px */
+    margin-top: auto;           /* 顶部自动边距，推到最下方 */
+}
+
+.yyk-template-card .yyk-card-detail,
+.yyk-template-card .yyk-card-download {
+    flex: 1;                    /* 均分宽度 */
+    padding: 8px 15px;          /* 内边距：上下8px，左右15px */
+    text-align: center;         /* 文字居中 */
+    border-radius: 6px;         /* 圆角6px */
+    text-decoration: none;      /* 无下划线 */
+    font-size: 14px;            /* 字体大小14px */
+    font-weight: 500;           /* 字体粗细500 */
+    transition: all 0.3s ease;  /* 过渡动画0.3秒 */
+    border: 1px solid transparent;  /* 透明边框 */
+    white-space: nowrap;        /* 不换行 */
+}
+
+.yyk-template-card .yyk-card-detail {
+    background: #f0f0f0;        /* 浅灰色背景 */
+    color: #666;                /* 深灰色文字 */
+    border-color: #ddd;         /* 边框颜色 */
+}
+
+.yyk-template-card .yyk-card-detail:hover {
+    background: #e5e5e5;        /* 悬停时背景变深 */
+    color: #333;                /* 悬停时文字变深 */
+}
+
+.yyk-template-card .yyk-card-download {
+    background: #0073aa;        /* 蓝色背景 */
+    color: #fff;                /* 白色文字 */
+    border-color: #0073aa;      /* 蓝色边框 */
+}
+
+.yyk-template-card .yyk-card-download:hover {
+    background: #005a87;        /* 悬停时深蓝色背景 */
+    border-color: #005a87;      /* 悬停时深蓝色边框 */
+}
+
+/* =========== 游戏盒子卡片样式 =========== */
+.yyk-gamebox {
+    background: white;          /* 白色背景 */
+    border-radius: 12px;        /* 圆角12px */
+    overflow: hidden;           /* 隐藏溢出内容 */
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);  /* 阴影效果 */
+    border: 1px solid #e8e8e8;  /* 边框颜色 */
+    transition: all 0.3s ease;  /* 过渡动画0.3秒 */
+    margin: 5px;               /* 外边距20px */
+    width: calc(100% - 10px);   /* 宽度减去左右边距 */
+    box-sizing: border-box;     /* 盒模型计算方式 */
+    display: flex;              /* 使用Flex布局 */
+    flex-direction: column;     /* 垂直方向排列 */
+}
+
+.yyk-gamebox:hover {
+    transform: translateY(-5px);  /* 悬停时上移5px */
+    box-shadow: 0 8px 25px rgba(0,0,0,0.15);  /* 悬停时阴影加深 */
+}
+
+/* 游戏盒子图标区域 */
+.yyk-gamebox .yyk-gamebox-icon {
+    position: relative;         /* 相对定位 */
+    width: 100%;                /* 宽度100% */
+    height: 0;                  /* 高度为0 */
+    padding-bottom: 100%;       /* 通过padding-bottom创建正方形 */
+    overflow: hidden;           /* 隐藏溢出内容 */
+    background: #f8f9fa;        /* 浅灰色背景 */
+    display: flex;              /* 使用Flex布局 */
+    align-items: center;        /* 垂直居中 */
+    justify-content: center;    /* 水平居中 */
+}
+
+/* 游戏盒子图标 - 铺满容器并留10px边距 */
+.yyk-gamebox .yyk-gamebox-icon img {
+    position: absolute;         /* 绝对定位 */
+    top: 10px;                  /* 顶部偏移10px */
+    left: 10px;                 /* 左侧偏移10px */
+    right: 10px;                /* 右侧偏移10px */
+    bottom: 0px;                /* 底部偏移0px */
+    width: calc(100% - 20px) !important;    /* 宽度减去20px */
+    height: calc(100% - 10px) !important;   /* 高度减去20px */
+    object-fit: cover !important;           /* 图片填充方式 */
+    display: block !important;  /* 块级显示 */
+}
+
+/* 游戏盒子热门标签 - 右上角 */
+.yyk-gamebox .yyk-hot-tag {
+    position: absolute;         /* 绝对定位 */
+    top: 10px;                  /* 顶部偏移10px */
+    right: 10px;                /* 右侧偏移10px */
+    background: #ff4757;        /* 红色背景 */
+    color: white;               /* 白色文字 */
+    padding: 3px 8px;           /* 内边距：上下3px，左右8px */
+    font-size: 11px;            /* 字体大小11px */
+    font-weight: 600;           /* 字体粗细600 */
+    border-radius: 4px;         /* 圆角4px */
+    text-transform: uppercase;  /* 大写字母 */
+    z-index: 2;                 /* 层级2，显示在图标上方 */
+}
+
+/* 游戏盒子内容区域 */
+.yyk-gamebox .yyk-gamebox-content {
+    padding: 20px;              /* 内边距20px */
+    display: flex;              /* 使用Flex布局 */
+    flex-direction: column;     /* 垂直方向排列 */
+    align-items: center;        /* 水平居中 */
+    text-align: center;         /* 文字居中 */
+    flex: 1;                    /* 占据剩余空间 */
+}
+
+/* 游戏盒子标题 */
+.yyk-gamebox .yyk-gamebox-title {
+    margin: 0 0 15px 0;         /* 下边距15px */
+    font-size: 16px;            /* 字体大小16px */
+    font-weight: 600;           /* 字体粗细600 */
+    line-height: 1.3;           /* 行高1.3 */
+    color: #333;                /* 深灰色文字 */
+    width: 100%;                /* 宽度100% */
+    overflow: hidden;           /* 隐藏溢出内容 */
+    text-overflow: ellipsis;    /* 超出显示省略号 */
+    white-space: nowrap;        /* 不换行 */
+}
+
+.yyk-gamebox .yyk-gamebox-title a {
+    color: #333;                /* 深灰色链接 */
+    text-decoration: none;      /* 无下划线 */
+}
+
+.yyk-gamebox .yyk-gamebox-title a:hover {
+    color: #0073aa;             /* 悬停时蓝色链接 */
+}
+
+/* 游戏盒子下载按钮 */
+.yyk-gamebox .yyk-gamebox-download {
+    display: inline-block;      /* 行内块显示 */
+    padding: 10px 25px;         /* 内边距：上下10px，左右25px */
+    background: #0073aa;        /* 蓝色背景 */
+    color: #fff;                /* 白色文字 */
+    border-radius: 6px;         /* 圆角6px */
+    text-decoration: none;      /* 无下划线 */
+    font-size: 14px;            /* 字体大小14px */
+    font-weight: 500;           /* 字体粗细500 */
+    border: 1px solid #0073aa;  /* 蓝色边框 */
+    transition: all 0.3s ease;  /* 过渡动画0.3秒 */
+    width: 100%;                /* 宽度100% */
+    text-align: center;         /* 文字居中 */
+    margin-top: auto;           /* 顶部自动边距，推到最下方 */
+    white-space: nowrap;        /* 不换行 */
+}
+
+.yyk-gamebox .yyk-gamebox-download:hover {
+    background: #005a87;        /* 悬停时深蓝色背景 */
+    border-color: #005a87;      /* 悬停时深蓝色边框 */
+}
+
+/* 列表布局样式 */
+.yyk-list-item {
+    display: flex;              /* 使用Flex布局 */
+    align-items: center;        /* 垂直居中 */
+    gap: 10px;                  /* 子元素间距10px */
+    padding: 10px 0px 10px 10px;              /* 内边距10px */
+    background: white;          /* 白色背景 */
+    border-radius: 8px;         /* 圆角8px */
+    border: 1px solid #e8e8e8;  /* 边框颜色 */
+    transition: all 0.3s ease;  /* 过渡动画0.3秒 */
+}
+
+.yyk-list-item:hover {
+    background: #f8f9fa;        /* 悬停时浅灰色背景 */
+    transform: translateX(5px);  /* 悬停时右移5px */
+}
+
+.yyk-list-icon {
+    flex: 0 0 40px;             /* 固定宽度40px */
+    width: 40px;                /* 宽度40px */
+    height: 40px;               /* 高度40px */
+    border-radius: 8px;         /* 圆角8px */
+    overflow: hidden;           /* 隐藏溢出内容 */
+    background: #f8f9fa;        /* 浅灰色背景 */
+}
+
+.yyk-list-icon img {
+    width: 100% !important;     /* 宽度100% */
+    height: 100% !important;    /* 高度100% */
+    object-fit: cover !important;  /* 图片填充方式 */
+}
+
+.yyk-list-content {
+    flex: 1;                    /* 占据剩余空间 */
+    min-width: 0;               /* 防止内容溢出 */
+}
+
+.yyk-list-title {
+    margin: 0 0 5px 0;          /* 下边距5px */
+    font-size: 14px;            /* 字体大小14px */
+    line-height: 1.3;           /* 行高1.3 */
+}
+
+.yyk-list-title a {
+    color: #333;                /* 深灰色链接 */
+    text-decoration: none;      /* 无下划线 */
+}
+
+.yyk-list-title a:hover {
+    color: #0073aa;             /* 悬停时蓝色链接 */
+}
+
+.yyk-list-meta {
+    display: flex;              /* 使用Flex布局 */
+    gap: 8px;                   /* 子元素间距8px */
+    font-size: 12px;            /* 字体大小12px */
+    color: #666;                /* 深灰色文字 */
+}
+
+.yyk-list-version,
+.yyk-list-size {
+    background: #f5f7fa;        /* 浅灰色背景 */
+    padding: 2px 6px;           /* 内边距：上下2px，左右6px */
+    border-radius: 3px;         /* 圆角3px */
+}
+
+.yyk-list-badges {
+    flex: 0 0 auto;             /* 不放大不缩小，自动宽度 */
+}
+
+/* 轮播布局样式 */
+.yyk-layout-carousel .yyk-widget-grid {
+    display: flex;              /* 使用Flex布局 */
+    overflow-x: auto;           /* 水平滚动 */
+    gap: 10px;                  /* 子元素间距20px */
+    padding: 0px 10px 10px 10px;  /* 内边距：上下20px，右20px，左0 */
+    scrollbar-width: thin;      /* 滚动条宽度 */
+    scrollbar-color: #0073aa #f0f0f0;  /* 滚动条颜色 */
+    margin: 0 0 0 0;        /* 负右边距，让内容可以靠左 */
+    padding-left: 0px;         /* 添加左内边距 */
+}
+
+.yyk-layout-carousel .yyk-widget-grid::-webkit-scrollbar {
+    height: 6px;                /* 滚动条高度6px */
+}
+
+.yyk-layout-carousel .yyk-widget-grid::-webkit-scrollbar-track {
+    background: #f0f0f0;        /* 滚动条轨道颜色 */
+    border-radius: 3px;         /* 圆角3px */
+}
+
+.yyk-layout-carousel .yyk-widget-grid::-webkit-scrollbar-thumb {
+    background: #0073aa;        /* 滚动条滑块颜色 */
+    border-radius: 3px;         /* 圆角3px */
+}
+
+.yyk-layout-carousel .yyk-template-card {
+    flex: 0 0 auto;             /* 不放大不缩小，自动宽度 */
+    width: 500px;               /* 固定宽度500px */
+    margin: 0;                  /* 外边距为0 */
+}
+
+.yyk-layout-carousel .yyk-gamebox {
+    flex: 0 0 auto;             /* 不放大不缩小，自动宽度 */
+    width: 150px;               /* 固定宽度150px */
+    margin: 0;                  /* 外边距为0 */
+}
+
+/* 解决第一个卡片在容器外的问题 */
+.yyk-layout-carousel .yyk-widget-container {
+    overflow: hidden;           /* 隐藏溢出内容 */
+    position: relative;         /* 相对定位 */
+}
+
+/* 添加左右阴影渐变效果 */
+.yyk-layout-carousel .yyk-widget-grid::before,
+.yyk-layout-carousel .yyk-widget-grid::after {
+    content: '';                /* 伪元素内容为空 */
+    position: absolute;         /* 绝对定位 */
+    top: 0;                     /* 顶部对齐 */
+    bottom: 0;                  /* 底部对齐 */
+    width: 0px;                /* 宽度20px */
+    pointer-events: none;       /* 不接收鼠标事件 */
+    z-index: 1;                 /* 层级1 */
+}
+
+.yyk-layout-carousel .yyk-widget-grid::before {
+    left: 0;                    /* 左侧对齐 */
+    background: linear-gradient(to right, white, transparent);  /* 从左到右渐变 */
+}
+
+.yyk-layout-carousel .yyk-widget-grid::after {
+    right: 0;                   /* 右侧对齐 */
+    background: linear-gradient(to left, white, transparent);   /* 从右到左渐变 */
+}
+
+/* =========== 响应式设计 =========== */
+
+/* 大屏幕（>1200px） */
+@media (min-width: 1200px) {
+    .yyk-widget-container.yyk-columns-6 .yyk-template-card,
+    .yyk-widget-container.yyk-columns-6 .yyk-gamebox {
+        margin: 5px;           /* 外边距15px */
+        width: calc(100% - 30px);  /* 宽度减去30px */
+    }
+}
+
+/* 中等屏幕（992px-1200px） */
+@media (max-width: 1200px) and (min-width: 992px) {
+    .yyk-widget-container.yyk-columns-5 .yyk-widget-grid,
+    .yyk-widget-container.yyk-columns-6 .yyk-widget-grid {
+        grid-template-columns: repeat(4, 1fr);  /* 4列布局 */
+    }
+    
+    .yyk-template-card {
+        height: 180px;          /* 高度180px */
+        margin: 10px;           /* 外边距15px */
+        width: calc(100% - 10px);  /* 宽度减去30px */
+    }
+    
+    .yyk-template-card .yyk-card-icon {
+        flex: 0 0 300px;        /* 固定宽度130px */
+        width: 300px;           /* 宽度130px */
+        height: 110px;          /* 高度110px */
+    }
+    
+    .yyk-gamebox {
+        margin: 10px;           /* 外边距15px */
+        width: calc(100% - 10px);  /* 宽度减去30px */
+    }
+}
+
+/* 小屏幕（768px-992px） */
+@media (max-width: 992px) and (min-width: 768px) {
+    .yyk-widget-container.yyk-columns-4 .yyk-widget-grid,
+    .yyk-widget-container.yyk-columns-5 .yyk-widget-grid,
+    .yyk-widget-container.yyk-columns-6 .yyk-widget-grid {
+        grid-template-columns: repeat(3, 1fr);  /* 3列布局 */
+    }
+    
+    .yyk-template-card {
+        height: 190px;          /* 高度190px */
+        margin: 12px;           /* 外边距12px */
+        width: calc(100% - 24px);  /* 宽度减去24px */
+    }
+    
+    .yyk-template-card .yyk-card-icon {
+        flex: 0 0 300px;        /* 固定宽度120px */
+        width: 300px;           /* 宽度120px */
+        height: 100px;          /* 高度100px */
+    }
+    
+    .yyk-template-card .yyk-card-meta {
+        flex-wrap: wrap;        /* 允许换行 */
+        gap: 8px;               /* 子元素间距8px */
+    }
+    
+    .yyk-gamebox {
+        margin: 10px;           /* 外边距12px */
+        width: calc(100% - 10px);  /* 宽度减去24px */
+    }
+}
+
+/* 平板（576px-768px） */
+@media (max-width: 768px) and (min-width: 576px) {
+    .yyk-widget-container.yyk-columns-3 .yyk-widget-grid,
+    .yyk-widget-container.yyk-columns-4 .yyk-widget-grid,
+    .yyk-widget-container.yyk-columns-5 .yyk-widget-grid,
+    .yyk-widget-container.yyk-columns-6 .yyk-widget-grid {
+        grid-template-columns: repeat(2, 1fr);  /* 2列布局 */
+    }
+    
+    .yyk-template-card {
+        height: 200px;          /* 高度200px */
+        margin: 10px;           /* 外边距10px */
+        width: calc(100% - 10px);  /* 宽度减去20px */
+        flex-direction: column;  /* 垂直方向排列 */
+    }
+    
+    .yyk-template-card .yyk-card-inner {
+        flex-direction: column;  /* 垂直方向排列 */
+        padding: 15px;           /* 内边距15px */
+    }
+    
+    .yyk-template-card .yyk-card-icon {
+        flex: 0 0 auto;         /* 自动宽度 */
+        width: 100px;           /* 宽度100px */
+        height: 100px;          /* 高度100px */
+        margin-right: 0;        /* 右边距为0 */
+        margin-bottom: 15px;    /* 下边距15px */
+        align-self: center;     /* 自身居中 */
+    }
+    
+    .yyk-template-card .yyk-card-meta {
+        justify-content: center;  /* 水平居中 */
+    }
+    
+    .yyk-gamebox {
+        margin: 10px;           /* 外边距10px */
+        width: calc(100% - 10px);  /* 宽度减去20px */
+    }
+}
+
+/* 手机（<576px） */
+@media (max-width: 576px) {
+    .yyk-widget-container.yyk-columns-2 .yyk-widget-grid,
+    .yyk-widget-container.yyk-columns-3 .yyk-widget-grid,
+    .yyk-widget-container.yyk-columns-4 .yyk-widget-grid,
+    .yyk-widget-container.yyk-columns-5 .yyk-widget-grid,
+    .yyk-widget-container.yyk-columns-6 .yyk-widget-grid {
+        grid-template-columns: 1fr;  /* 1列布局 */
+    }
+    
+    .yyk-template-card {
+        height: auto;           /* 自动高度 */
+        margin: 10px;           /* 外边距10px */
+        width: calc(100% - 10px);  /* 宽度减去20px */
+        flex-direction: column;  /* 垂直方向排列 */
+        min-height: 170px;      /* 最小高度170px */
+    }
+    
+    .yyk-template-card .yyk-card-inner {
+        flex-direction: column;  /* 垂直方向排列 */
+        padding: 15px;           /* 内边距15px */
+    }
+    
+    .yyk-template-card .yyk-card-icon {
+        flex: 0 0 auto;         /* 自动宽度 */
+        width: 150px;            /* 宽度80px */
+        height: 150px;           /* 高度80px */
+        margin-right: 0;        /* 右边距为0 */
+        margin-bottom: 10px;    /* 下边距15px */
+        align-self: center;     /* 自身居中 */
+    }
+    
+    .yyk-template-card .yyk-card-meta {
+        flex-wrap: wrap;        /* 允许换行 */
+        justify-content: center;  /* 水平居中 */
+        gap: 8px;               /* 子元素间距8px */
+    }
+    
+    .yyk-template-card .yyk-card-actions {
+        flex-direction: column;  /* 垂直方向排列 */
+        gap: 10px;              /* 按钮间距10px */
+    }
+    
+    .yyk-gamebox {
+        margin: 10px;           /* 外边距10px */
+        width: calc(100% - 10px);  /* 宽度减去20px */
+        max-width: 150px;       /* 最大宽度250px */
+        margin-left: auto;      /* 左外边距自动 */
+        margin-right: auto;     /* 右外边距自动 */
+    }
+    
+    .yyk-layout-carousel .yyk-template-card {
+    width: 300px;           /* 轮播卡片宽度250px */
+    }
+    .yyk-layout-carousel .yyk-gamebox {
+        width: 150px;           /* 轮播卡片宽度250px */
+    }
+}
+
+/* 主题兼容性修复 */
+.widget .yyk-widget-container * {
+    box-sizing: border-box;     /* 盒模型计算方式 */
+}
+
+.widget .yyk-template-card,
+.widget .yyk-gamebox,
+.widget .yyk-list-item {
+    max-width: none !important;  /* 取消最大宽度限制 */
+}
+
+/* 清除浮动影响 */
+.widget:after {
+    content: "";                /* 伪元素内容为空 */
+    display: table;             /* 表格显示 */
+    clear: both;                /* 清除浮动 */
+}
+
+/* 防止主题覆盖 */
+.sidebar .widget .yyk-widget-container,
+.widget-area .widget .yyk-widget-container,
+#sidebar .widget .yyk-widget-container,
+#secondary .widget .yyk-widget-container {
+    width: 100% !important;     /* 强制宽度100% */
+}
+
+/* ===== 原有的归档页样式保持不动 ===== */
+
+/* 应用归档页样式 */
+.yyk-archive-container {
+    max-width: 1400px;          /* 最大宽度1200px */
+    margin: 0 auto;             /* 水平居中 */
+    padding: 30px 20px;         /* 内边距：上下30px，左右20px */
+}
+
+/* 归档页头部 */
+.yyk-archive-header {
+    margin-bottom: 40px;        /* 下边距40px */
+    text-align: center;         /* 文字居中 */
+}
+
+.yyk-archive-title {
+    margin: 0 0 15px 0;         /* 下边距15px */
+    font-size: 32px;            /* 字体大小32px */
+    font-weight: 700;           /* 字体粗细700 */
+    color: #333;                /* 深灰色文字 */
+}
+
+.yyk-archive-description {
+    font-size: 16px;            /* 字体大小16px */
+    line-height: 1.6;           /* 行高1.6 */
+    color: #666;                /* 深灰色文字 */
+    max-width: 800px;           /* 最大宽度800px */
+    margin: 0 auto;             /* 水平居中 */
+}
+
+/* 归档内容布局 */
+.yyk-archive-content {
+    display: grid;              /* 使用网格布局 */
+    grid-template-columns: 250px 1fr;  /* 左侧250px，右侧自适应 */
+    gap: 40px;                  /* 列间距40px */
+}
+
+@media (max-width: 992px) {
+    .yyk-archive-content {
+        grid-template-columns: 1fr;  /* 1列布局 */
+        gap: 30px;              /* 间距30px */
+    }
+}
+
+/* 侧边栏样式 */
+.yyk-archive-sidebar {
+    background: white;          /* 白色背景 */
+    border-radius: 12px;        /* 圆角12px */
+    padding: 25px;              /* 内边距25px */
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);  /* 阴影效果 */
+    border: 1px solid #e8e8e8;  /* 边框颜色 */
+    height: fit-content;        /* 高度适应内容 */
+    position: sticky;           /* 粘性定位 */
+    top: 20px;                  /* 顶部偏移20px */
+}
+
+.yyk-archive-sidebar h3 {
+    margin: 0 0 20px 0;         /* 下边距20px */
+    font-size: 18px;            /* 字体大小18px */
+    color: #333;                /* 深灰色文字 */
+    padding-bottom: 15px;       /* 底部内边距15px */
+    border-bottom: 2px solid #f0f0f0;  /* 底部边框 */
+}
+
+/* 分类菜单 */
+.yyk-category-menu {
+    list-style: none;           /* 无列表样式 */
+    margin: 0 0 30px 0;         /* 下边距30px */
+    padding: 0;                 /* 内边距为0 */
+}
+
+.yyk-category-menu li {
+    margin-bottom: 8px;         /* 下边距8px */
+}
+
+.yyk-category-menu li:last-child {
+    margin-bottom: 0;           /* 最后一个元素下边距为0 */
+}
+
+.yyk-category-menu a {
+    display: flex;              /* 使用Flex布局 */
+    justify-content: space-between;  /* 两端对齐 */
+    align-items: center;        /* 垂直居中 */
+    padding: 10px 15px;         /* 内边距：上下10px，左右15px */
+    border-radius: 8px;         /* 圆角8px */
+    text-decoration: none;      /* 无下划线 */
+    color: #555;                /* 中灰色文字 */
+    font-weight: 500;           /* 字体粗细500 */
+    transition: all 0.3s ease;  /* 过渡动画0.3秒 */
+    border: 1px solid transparent;  /* 透明边框 */
+}
+
+.yyk-category-menu a:hover {
+    background: #f8f9fa;        /* 悬停时浅灰色背景 */
+    color: #0073aa;             /* 悬停时蓝色文字 */
+    border-color: #e9ecef;      /* 悬停时边框颜色 */
+}
+
+.yyk-category-menu a.yyk-active {
+    background: #0073aa;        /* 激活时蓝色背景 */
+    color: white;               /* 激活时白色文字 */
+    border-color: #0073aa;      /* 激活时蓝色边框 */
+}
+
+.yyk-category-menu a.yyk-active:hover {
+    background: #005a87;        /* 悬停时深蓝色背景 */
+    border-color: #005a87;      /* 悬停时深蓝色边框 */
+}
+
+.yyk-count {
+    font-size: 12px;            /* 字体大小12px */
+    background: #e9ecef;        /* 浅灰色背景 */
+    color: #666;                /* 深灰色文字 */
+    padding: 2px 8px;           /* 内边距：上下2px，左右8px */
+    border-radius: 10px;        /* 圆角10px */
+    font-weight: 500;           /* 字体粗细500 */
+}
+
+.yyk-category-menu a.yyk-active .yyk-count {
+    background: rgba(255,255,255,0.2);  /* 半透明白色背景 */
+    color: white;               /* 白色文字 */
+}
+
+/* 热门应用 */
+.yyk-hot-apps {
+    margin-top: 30px;           /* 上边距30px */
+}
+
+.yyk-hot-apps-list {
+    display: flex;              /* 使用Flex布局 */
+    flex-direction: column;     /* 垂直方向排列 */
+    gap: 15px;                  /* 子元素间距15px */
+}
+
+.yyk-hot-app-item {
+    display: flex;              /* 使用Flex布局 */
+    align-items: center;        /* 垂直居中 */
+    gap: 12px;                  /* 子元素间距12px */
+    padding: 12px;              /* 内边距12px */
+    border-radius: 8px;         /* 圆角8px */
+    background: #f8f9fa;        /* 浅灰色背景 */
+    transition: all 0.3s ease;  /* 过渡动画0.3秒 */
+}
+
+.yyk-hot-app-item:hover {
+    background: #e9ecef;        /* 悬停时背景变深 */
+    transform: translateX(5px);  /* 悬停时右移5px */
+}
+
+.yyk-hot-app-icon {
+    flex: 0 0 80px;             /* 固定宽度40px */
+    width: 80px;                /* 宽度40px */
+    height: 80px;               /* 高度40px */
+    border-radius: 10px;        /* 圆角10px */
+    overflow: hidden;           /* 隐藏溢出内容 */
+    background: white;          /* 白色背景 */
+}
+
+.yyk-hot-app-icon img {
+    width: 100%;                /* 宽度100% */
+    height: 100%;               /* 高度100% */
+    object-fit: cover;          /* 图片填充方式 */
+}
+
+.yyk-hot-app-info {
+    flex: 1;                    /* 占据剩余空间 */
+    min-width: 0;               /* 防止内容溢出 */
+}
+
+.yyk-hot-app-title {
+    margin: 0 0 4px 0;          /* 下边距4px */
+    font-size: 14px;            /* 字体大小14px */
+    line-height: 1.3;           /* 行高1.3 */
+}
+
+.yyk-hot-app-title a {
+    color: #333;                /* 深灰色链接 */
+    text-decoration: none;      /* 无下划线 */
+}
+
+.yyk-hot-app-title a:hover {
+    color: #0073aa;             /* 悬停时蓝色链接 */
+}
+
+.yyk-hot-app-developer {
+    margin: 0;                  /* 外边距为0 */
+    font-size: 12px;            /* 字体大小12px */
+    color: #666;                /* 深灰色文字 */
+}
+
+/* 归档页主要内容区域 */
+.yyk-archive-main {
+    background: white;          /* 白色背景 */
+    border-radius: 12px;        /* 圆角12px */
+    padding: 30px;              /* 内边距30px */
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);  /* 阴影效果 */
+    border: 1px solid #e8e8e8;  /* 边框颜色 */
+}
+
+/* 确保归档页的应用网格显示正确 */
+body .yyk-archive-container .yyk-app-grid {
+    display: grid !important;              /* 强制网格布局 */
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)) !important;  /* 自适应列 */
+    gap: 25px !important;                  /* 间距25px */
+    margin-bottom: 40px !important;        /* 下边距40px */
+}
+
+/* 分页样式 */
+.yyk-pagination {
+    text-align: center;         /* 文字居中 */
+    padding-top: 30px;          /* 上内边距30px */
+    border-top: 2px solid #f0f0f0;  /* 顶部边框 */
+}
+
+.yyk-pagination .nav-links {
+    display: flex;              /* 使用Flex布局 */
+    justify-content: center;    /* 水平居中 */
+    align-items: center;        /* 垂直居中 */
+    gap: 8px;                   /* 子元素间距8px */
+    flex-wrap: wrap;            /* 允许换行 */
+}
+
+.yyk-pagination .page-numbers {
+    display: inline-flex;       /* 行内Flex布局 */
+    align-items: center;        /* 垂直居中 */
+    justify-content: center;    /* 水平居中 */
+    min-width: 40px;            /* 最小宽度40px */
+    height: 40px;               /* 高度40px */
+    padding: 0 12px;            /* 内边距：左右12px */
+    border-radius: 6px;         /* 圆角6px */
+    background: #f8f9fa;        /* 浅灰色背景 */
+    color: #555;                /* 中灰色文字 */
+    text-decoration: none;      /* 无下划线 */
+    font-weight: 500;           /* 字体粗细500 */
+    border: 1px solid #e9ecef;  /* 边框颜色 */
+    transition: all 0.3s ease;  /* 过渡动画0.3秒 */
+}
+
+.yyk-pagination .page-numbers:hover {
+    background: #0073aa;        /* 悬停时蓝色背景 */
+    color: white;               /* 悬停时白色文字 */
+    border-color: #0073aa;      /* 悬停时蓝色边框 */
+}
+
+.yyk-pagination .page-numbers.current {
+    background: #0073aa;        /* 当前页蓝色背景 */
+    color: white;               /* 当前页白色文字 */
+    border-color: #0073aa;      /* 当前页蓝色边框 */
+}
+
+.yyk-pagination .page-numbers.dots {
+    background: transparent;    /* 透明背景 */
+    border: none;               /* 无边框 */
+    min-width: auto;            /* 自动最小宽度 */
+}
+
+.yyk-pagination .page-numbers.dots:hover {
+    background: transparent;    /* 悬停时透明背景 */
+    color: #555;                /* 悬停时中灰色文字 */
+}
+
+/* 无应用提示 */
+.yyk-no-apps {
+    text-align: center;         /* 文字居中 */
+    padding: 60px 30px;         /* 内边距：上下60px，左右30px */
+}
+
+.yyk-no-apps h3 {
+    margin: 0 0 15px 0;         /* 下边距15px */
+    font-size: 24px;            /* 字体大小24px */
+    color: #333;                /* 深灰色文字 */
+}
+
+.yyk-no-apps p {
+    margin: 0;                  /* 外边距为0 */
+    color: #666;                /* 深灰色文字 */
+    font-size: 16px;            /* 字体大小16px */
+}
+
+/* 分类短代码样式 */
+.yyk-categories.yyk-cat-style-grid .yyk-cat-grid {
+    display: grid;              /* 使用网格布局 */
+    grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));  /* 自适应列 */
+    gap: 15px;                  /* 间距15px */
+}
+
+.yyk-categories.yyk-cat-style-grid .yyk-cat-grid-item {
+    text-align: center;         /* 文字居中 */
+}
+
+.yyk-categories.yyk-cat-style-grid .yyk-cat-link {
+    display: block;             /* 块级显示 */
+    padding: 20px 15px;         /* 内边距：上下20px，左右15px */
+    border-radius: 10px;        /* 圆角10px */
+    background: #f8f9fa;        /* 浅灰色背景 */
+    text-decoration: none;      /* 无下划线 */
+    color: #333;                /* 深灰色文字 */
+    border: 2px solid transparent;  /* 透明边框 */
+    transition: all 0.3s ease;  /* 过渡动画0.3秒 */
+}
+
+.yyk-categories.yyk-cat-style-grid .yyk-cat-link:hover {
+    background: white;          /* 悬停时白色背景 */
+    border-color: #0073aa;      /* 悬停时蓝色边框 */
+    transform: translateY(-3px);  /* 悬停时上移3px */
+    box-shadow: 0 8px 20px rgba(0,0,0,0.1);  /* 悬停时阴影 */
+}
+
+.yyk-categories.yyk-cat-style-grid .yyk-cat-name {
+    display: block;             /* 块级显示 */
+    font-size: 16px;            /* 字体大小16px */
+    font-weight: 600;           /* 字体粗细600 */
+    margin-bottom: 8px;         /* 下边距8px */
+}
+
+.yyk-categories.yyk-cat-style-grid .yyk-cat-count {
+    display: block;             /* 块级显示 */
+    font-size: 12px;            /* 字体大小12px */
+    color: #666;                /* 深灰色文字 */
+    background: #e9ecef;        /* 浅灰色背景 */
+    padding: 2px 8px;           /* 内边距：上下2px，左右8px */
+    border-radius: 10px;        /* 圆角10px */
+    margin: 0 auto;             /* 水平居中 */
+    width: fit-content;         /* 宽度适应内容 */
+}
+
+/* ===== 小工具更多按钮 ===== */
+
+/* 小工具标题区域 */
+.yyk-widget-header {
+    display: flex;              /* 使用Flex布局 */
+    justify-content: space-between;  /* 两端对齐 */
+    align-items: center;        /* 垂直居中 */
+    margin-bottom: 20px;        /* 下边距20px */
+    padding-bottom: 15px;       /* 底部内边距15px */
+    border-bottom: 2px solid #f0f0f0;  /* 底部边框 */
+    position: relative;         /* 相对定位 */
+}
+
+/* 小工具标题 */
+.yyk-widget-header .widget-title {
+    margin: 0 !important;       /* 外边距为0 */
+    font-size: 18px;            /* 字体大小18px */
+    font-weight: 600;           /* 字体粗细600 */
+    color: #333;                /* 深灰色文字 */
+    flex: 1;                    /* 占据剩余空间 */
+}
+
+/* 更多按钮 */
+.yyk-widget-more {
+    display: inline-block;      /* 行内块显示 */
+    padding: 6px 15px;          /* 内边距：上下6px，左右15px */
+    background: #0073aa;        /* 蓝色背景 */
+    color: white !important;    /* 白色文字 */
+    border-radius: 4px;         /* 圆角4px */
+    text-decoration: none;      /* 无下划线 */
+    font-size: 13px;            /* 字体大小13px */
+    font-weight: 500;           /* 字体粗细500 */
+    transition: all 0.3s ease;  /* 过渡动画0.3秒 */
+    border: 1px solid #0073aa;  /* 蓝色边框 */
+    white-space: nowrap;        /* 不换行 */
+    margin-left: 15px;          /* 左边距15px */
+}
+
+.yyk-widget-more:hover {
+    background: #005a87;        /* 悬停时深蓝色背景 */
+    border-color: #005a87;      /* 悬停时深蓝色边框 */
+    color: white !important;    /* 悬停时白色文字 */
+    transform: translateX(3px);  /* 悬停时右移3px */
+}
+
+/* 如果没有标题，更多按钮单独显示 */
+.widget:not(:has(.widget-title)) .yyk-widget-more {
+    display: inline-block;      /* 行内块显示 */
+    margin: 0 0 20px 0;         /* 下边距20px */
+    align-self: flex-start;     /* 自身顶部对齐 */
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+    .yyk-widget-header {
+        flex-direction: column;  /* 垂直方向排列 */
+        align-items: flex-start;  /* 左对齐 */
+        gap: 10px;              /* 间距10px */
+    }
+    
+    .yyk-widget-more {
+        margin-left: 0;         /* 左边距为0 */
+        align-self: flex-end;   /* 自身右对齐 */
+    }
+}
+
+/* ===== 原有的小工具样式保持 ===== */

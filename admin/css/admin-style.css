@@ -1,0 +1,319 @@
+/* YYK应用下载管理器 - 后台样式 */
+
+/* 元字段区域 */
+.yyk-meta-fields,
+.yyk-link-fields,
+.yyk-status-fields {
+    padding: 15px 0;
+}
+
+.yyk-field {
+    margin-bottom: 15px;
+}
+
+.yyk-field label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 600;
+}
+
+.yyk-field .description {
+    margin: 5px 0 0 0;
+    font-style: italic;
+    color: #666;
+}
+
+.yyk-upload-field {
+    display: flex;
+    gap: 10px;
+    margin-top: 5px;
+}
+
+.yyk-upload-field input {
+    flex: 1;
+}
+
+.yyk-qr-preview {
+    margin-top: 15px;
+    padding: 10px;
+    background: #f5f5f5;
+    border-radius: 4px;
+    text-align: center;
+}
+
+.yyk-qr-preview p {
+    margin: 0 0 10px 0;
+    font-weight: 600;
+}
+
+/* 状态字段 */
+.yyk-status-fields p {
+    margin-bottom: 10px;
+}
+
+.yyk-status-fields label {
+    font-weight: normal;
+}
+
+.yyk-download-count label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: 600;
+}
+
+.yyk-shortcode-info {
+    margin-top: 15px;
+    padding: 10px;
+    background: #f5f5f5;
+    border-radius: 4px;
+}
+
+.yyk-shortcode-info code {
+    display: block;
+    padding: 5px;
+    background: white;
+    border: 1px solid #ddd;
+    margin: 5px 0;
+    font-size: 12px;
+    word-break: break-all;
+}
+
+/* 应用列表列 */
+.column-yyk_app_icon {
+    width: 70px;
+    text-align: center;
+}
+
+.column-yyk_app_icon img {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+    object-fit: cover;
+}
+
+.column-yyk_app_version {
+    width: 100px;
+}
+
+.column-yyk_app_status {
+    width: 120px;
+}
+
+.yyk-badge {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 10px;
+    font-size: 11px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.yyk-badge.yyk-hot {
+    background: #ffeaea;
+    color: #e74c3c;
+}
+
+.yyk-badge.yyk-recommend {
+    background: #e8f4fc;
+    color: #3498db;
+}
+
+.yyk-badge.yyk-normal {
+    background: #f0f0f0;
+    color: #666;
+}
+
+/* 分类管理 */
+.wp-list-table .column-slug {
+    width: 20%;
+}
+
+.wp-list-table .column-posts {
+    width: 10%;
+}
+
+/* 快速编辑 */
+.inline-edit-row fieldset label span.title {
+    width: 8em;
+}
+
+.inline-edit-row fieldset label span.input-text-wrap {
+    margin-left: 8em;
+}
+
+/* 响应式 */
+@media screen and (max-width: 782px) {
+    .column-yyk_app_icon,
+    .column-yyk_app_version,
+    .column-yyk_app_status {
+        display: none;
+    }
+    
+    .yyk-upload-field {
+        flex-direction: column;
+    }
+    
+    .yyk-upload-field .button {
+        width: 100%;
+    }
+}
+
+/* 动画效果 */
+@keyframes yykHighlight {
+    0% { background-color: #ffff99; }
+    100% { background-color: transparent; }
+}
+
+.yyk-highlight {
+    animation: yykHighlight 2s;
+}
+/* 应用卡片样式 */
+.yyk-app-card {
+    border: 1px solid #e5e5e5;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    background: #fff;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    transition: box-shadow 0.3s ease;
+}
+
+.yyk-app-card:hover {
+    box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+}
+
+.yyk-app-card-inner {
+    display: flex;
+    padding: 20px;
+}
+
+.yyk-app-icon {
+    flex: 0 0 80px;
+    margin-right: 20px;
+}
+
+.yyk-app-icon-img {
+    width: 80px;
+    height: 80px;
+    border-radius: 12px;
+    object-fit: cover;
+    border: 1px solid #eee;
+}
+
+.yyk-app-info {
+    flex: 1;
+}
+
+.yyk-app-title {
+    margin: 0 0 10px 0;
+    font-size: 18px;
+    font-weight: 600;
+}
+
+.yyk-app-title a {
+    color: #333;
+    text-decoration: none;
+}
+
+.yyk-app-title a:hover {
+    color: #0073aa;
+}
+
+.yyk-app-excerpt {
+    color: #666;
+    font-size: 14px;
+    line-height: 1.5;
+    margin-bottom: 15px;
+}
+
+.yyk-app-meta {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.yyk-app-category {
+    display: flex;
+    gap: 8px;
+}
+
+.yyk-app-cat-item {
+    background: #f0f0f0;
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-size: 12px;
+    color: #666;
+}
+
+.yyk-download-btn {
+    background: #0073aa;
+    color: #fff;
+    padding: 8px 16px;
+    border-radius: 4px;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    transition: background 0.3s ease;
+}
+
+.yyk-download-btn:hover {
+    background: #005a87;
+}
+
+/* 响应式设计 */
+@media (max-width: 768px) {
+    .yyk-app-card-inner {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .yyk-app-icon {
+        margin-right: 0;
+        margin-bottom: 15px;
+        flex: 0 0 auto;
+    }
+    
+    .yyk-app-meta {
+        flex-direction: column;
+        gap: 10px;
+    }
+}
+/* 应用图标上传样式 */
+.yyk-app-icon-upload {
+    text-align: center;
+}
+
+.yyk-app-icon-preview {
+    margin-bottom: 15px;
+    min-height: 150px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f5f5f5;
+    border-radius: 8px;
+    padding: 10px;
+}
+
+.yyk-app-icon-preview img {
+    max-width: 150px;
+    height: auto;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+}
+
+.yyk-upload-icon-button,
+.yyk-remove-icon-button {
+    margin: 5px;
+}
+
+.yyk-remove-icon-button {
+    background: #dc3545;
+    border-color: #dc3545;
+    color: white;
+}
+
+.yyk-remove-icon-button:hover {
+    background: #c82333;
+    border-color: #bd2130;
+}
