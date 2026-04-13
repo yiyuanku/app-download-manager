@@ -208,9 +208,13 @@ if (!class_exists('YYK_App_Frontend')) {
          */
         public static function get_app_icon_url($post_id, $size = 'medium') {
             $app_icon_id = get_post_meta($post_id, '_yyk_app_icon_id', true);
+            $app_icon_url = get_post_meta($post_id, '_yyk_app_icon_url', true);
             $icon_url = '';
             
-            if ($app_icon_id) {
+            if ($app_icon_url) {
+                // 使用远程图标URL
+                $icon_url = $app_icon_url;
+            } elseif ($app_icon_id) {
                 // 根据图标尺寸获取不同大小的图片
                 switch ($size) {
                     case 'small':

@@ -26,6 +26,8 @@ if (!class_exists('YYK_App_Shortcodes')) {
             add_shortcode('yyk_app', [$this, 'app_shortcode']);
             add_shortcode('yyk_app_list', [$this, 'app_list_shortcode']);
             add_shortcode('yyk_app_categories', [$this, 'app_categories_shortcode']);
+            add_shortcode('yyk_st_games', [$this, 'st_games_shortcode']);
+            add_shortcode('yyk_st_game', [$this, 'st_game_shortcode']);
             
             // 记录日志
             if (current_user_can('manage_options')) {
@@ -137,6 +139,47 @@ if (!class_exists('YYK_App_Shortcodes')) {
             }
             
             return ob_get_clean();
+        }
+        
+        public function st_game_shortcode($atts) {
+            $atts = shortcode_atts([
+                'id' => 0,
+                'icon_size' => 'medium',
+            ], $atts, 'yyk_st_game');
+            
+            $game_id = intval($atts['id']);
+            
+            if (!$game_id) {
+                return '<div class="yyk-error">' . __('请指定游戏ID', 'yyk-app-download') . '</div>';
+            }
+            
+            $post = get_post($game_id);
+            
+            if (!$post || 'yyk_app_download' !== $post->post_type) {
+                return '<div class="yyk-error">' . __('ST游戏不存在', 'yyk-app-download') . '</div>';
+            }
+            
+            if (class_exists('YYK_ST_Display')) {
+                return YYK_ST_Display::render_st_game_card($game_id, $atts['icon_size']);
+            }
+            
+            return '<div class="yyk-error">' . __('ST显示类未加载', 'yyk-app-download') . '</div>';
+        }
+        
+        public function st_games_shortcode($atts) {
+            $atts = shortcode_atts([
+                'count' => 12,
+                'columns' => 3,
+                'orderby' => 'date',
+                'order' => 'DESC',
+                'icon_size' => 'medium',
+            ], $atts, 'yyk_st_games');
+            
+            if (class_exists('YYK_ST_Display')) {
+                return YYK_ST_Display::render_st_game_list($atts);
+            }
+            
+            return '<div class="yyk-error">' . __('ST显示类未加载', 'yyk-app-download') . '</div>';
         }
     }
 }

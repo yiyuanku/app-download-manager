@@ -2,8 +2,8 @@
 /**
  * Plugin Name: 应用下载管理器 (YYK)
  * Plugin URI: https://yourwebsite.com/
- * Description: 专业的应用下载管理插件，支持卡片样式和游戏盒子样式展示
- * Version: 1.1.0
+ * Description: 专业的应用下载管理插件，支持卡片样式和游戏盒子样式展示，集成ST手游采集
+ * Version: 1.0.2
  * Author: 您的名字
  * License: GPL v2 or later
  * Text Domain: yyk-app-download
@@ -29,12 +29,12 @@ function yyk_app_download_php_version_notice() {
 }
 
 // 定义插件常量
-define('YYK_APP_VERSION', '1.1.0');
+define('YYK_APP_VERSION', '1.0.2');
 define('YYK_APP_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('YYK_APP_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('YYK_APP_ASSETS_URL', YYK_APP_PLUGIN_URL . 'assets/');
 
-// 检查是否已定义类，避免重复定义
+// 检查是否已定义类
 if (!class_exists('YYK_App_Download_Manager')) {
 
     class YYK_App_Download_Manager {
@@ -53,133 +53,45 @@ if (!class_exists('YYK_App_Download_Manager')) {
         }
         
         private function init_hooks() {
-            // 插件激活/停用钩子
             register_activation_hook(__FILE__, [$this, 'activate']);
             register_deactivation_hook(__FILE__, [$this, 'deactivate']);
             
-            // 初始化
             add_action('init', [$this, 'init'], 0);
-            
-            // 加载文本域
             add_action('plugins_loaded', [$this, 'load_textdomain']);
-            
-            // 注册样式和脚本
             add_action('wp_enqueue_scripts', [$this, 'enqueue_public_assets']);
             add_action('admin_enqueue_scripts', [$this, 'enqueue_admin_assets']);
+            add_action('admin_menu', [$this, 'add_admin_menu']);
             
-            // 添加诊断信息到插件列表
             add_filter('plugin_action_links_' . plugin_basename(__FILE__), [$this, 'add_plugin_action_links']);
             
-            // 添加诊断页面
-            add_action('admin_menu', [$this, 'add_diagnostic_page']);
-            
-            // ========== ST采集 AJAX 钩子 ==========
-            add_action('wp_ajax_yyk_get_st_nonce', [$this, 'ajax_yyk_get_st_nonce']);
-            add_action('wp_ajax_st_collect_categories', [$this, 'ajax_st_collect_categories']);
-            add_action('wp_ajax_st_collect_games', [$this, 'ajax_st_collect_games']);
-            add_action('wp_ajax_st_collect_reserve', [$this, 'ajax_st_collect_reserve']);
-            add_action('wp_ajax_st_collect_rankings', [$this, 'ajax_st_collect_rankings']);
-            add_action('wp_ajax_st_collect_all', [$this, 'ajax_st_collect_all']);
-            add_action('wp_ajax_st_save_settings', [$this, 'ajax_st_save_settings']);
-            add_action('wp_ajax_st_clear_logs', [$this, 'ajax_st_clear_logs']);
-            
-            // ST采集菜单
-            add_action('admin_menu', [$this, 'add_st_collect_menu']);
+            // 添加ST采集器AJAX处理
+            add_action('wp_ajax_yyk_record_download', [$this, 'handle_download_record']);
+            add_action('wp_ajax_nopriv_yyk_record_download', [$this, 'handle_download_record']);
         }
         
         public function activate() {
-            // 创建默认分类
             $this->create_default_categories();
-            
-            // 创建数据库表
-            $this->create_database_tables();
-            
-            // 刷新重写规则
             flush_rewrite_rules();
             
-            // 设置默认选项
             update_option('yyk_app_default_style', 'card');
             update_option('yyk_app_items_per_page', 12);
+            update_option('yyk_app_version', YYK_APP_VERSION);
             
-            // 设置ST采集默认值
-            if (!get_option('yyk_st_api_domain')) {
-                update_option('yyk_st_api_domain', 'https://www.steamsy.com');
-            }
-            if (!get_option('yyk_st_cps_id')) {
-                update_option('yyk_st_cps_id', '15907108869');
+            // 激活ST采集器
+            if (class_exists('YYK_ST_Collector')) {
+                YYK_ST_Collector::get_instance()->activate();
             }
             
-            // 注册定时任务
-            if (!wp_next_scheduled('st_daily_collect')) {
-                wp_schedule_event(time(), 'daily', 'st_daily_collect');
-            }
-            
-            error_log('YYK应用下载管理器已激活');
+            error_log('YYK应用下载管理器已激活 v' . YYK_APP_VERSION);
         }
         
         public function deactivate() {
-            wp_clear_scheduled_hook('st_daily_collect');
             flush_rewrite_rules();
             error_log('YYK应用下载管理器已停用');
         }
         
-        private function create_database_tables() {
-            global $wpdb;
-            $charset_collate = $wpdb->get_charset_collate();
-            
-            // 采集日志表
-            $table_logs = $wpdb->prefix . 'yyk_collect_logs';
-            $sql_logs = "CREATE TABLE IF NOT EXISTS {$table_logs} (
-                id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-                action VARCHAR(50) NOT NULL,
-                message TEXT,
-                url TEXT,
-                count INT DEFAULT 0,
-                status VARCHAR(20) DEFAULT 'pending',
-                created_at DATETIME DEFAULT CURRENT_TIMESTAMP
-            ) {$charset_collate}";
-            
-            // 排行榜表
-            $table_rankings = $wpdb->prefix . 'yyk_rankings';
-            $sql_rankings = "CREATE TABLE IF NOT EXISTS {$table_rankings} (
-                id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-                game_id VARCHAR(20) NOT NULL,
-                rank_type TINYINT NOT NULL COMMENT '0注册/1充值',
-                days TINYINT NOT NULL COMMENT '1/7/30',
-                rank_value INT DEFAULT 0,
-                rank_num INT DEFAULT 0,
-                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-                UNIQUE KEY uk_game_rank (game_id, rank_type, days)
-            ) {$charset_collate}";
-            
-            // 礼包表
-            $table_gifts = $wpdb->prefix . 'yyk_gifts';
-            $sql_gifts = "CREATE TABLE IF NOT EXISTS {$table_gifts} (
-                id BIGINT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
-                gift_id VARCHAR(20) NOT NULL,
-                game_id VARCHAR(20) NOT NULL,
-                gift_name VARCHAR(200) NOT NULL,
-                gift_code VARCHAR(100),
-                gift_desc TEXT,
-                start_time DATETIME,
-                end_time DATETIME,
-                remain INT DEFAULT 0,
-                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
-                UNIQUE KEY uk_gift_id (gift_id)
-            ) {$charset_collate}";
-            
-            require_once(ABSPATH . 'wp-admin/includes/upgrade.php');
-            dbDelta($sql_logs);
-            dbDelta($sql_rankings);
-            dbDelta($sql_gifts);
-        }
-        
         public function load_textdomain() {
-            load_plugin_textdomain(
-                'yyk-app-download',
-                false,
-                dirname(plugin_basename(__FILE__)) . '/languages/'
-            );
+            load_plugin_textdomain('yyk-app-download', false, dirname(plugin_basename(__FILE__)) . '/languages/');
         }
         
         private function create_default_categories() {
@@ -200,33 +112,47 @@ if (!class_exists('YYK_App_Download_Manager')) {
         public function init() {
             error_log('YYK应用下载管理器: 开始初始化');
             
-            // 包含核心文件
             $this->include_files();
             
-            // 强制重新注册文章类型和分类
+            // 初始化各个模块
             if (class_exists('YYK_App_Post_Type')) {
                 YYK_App_Post_Type::get_instance()->init();
-                error_log('YYK应用下载管理器: 文章类型已初始化');
+                error_log('YYK: 文章类型已初始化');
             }
 
-            // 初始化元字段
             if (class_exists('YYK_App_Meta_Boxes')) {
                 YYK_App_Meta_Boxes::get_instance()->init();
+                error_log('YYK: 元字段已初始化');
             }
             
-            // 初始化短代码
             if (class_exists('YYK_App_Shortcodes')) {
                 YYK_App_Shortcodes::get_instance()->init();
+                error_log('YYK: 短代码已初始化');
             }
             
-            // 初始化前端
             if (class_exists('YYK_App_Frontend')) {
                 YYK_App_Frontend::get_instance()->init();
+                error_log('YYK: 前端已初始化');
             }
             
-            // 初始化诊断工具
+            if (class_exists('YYK_ST_Collector')) {
+                YYK_ST_Collector::get_instance()->init();
+                error_log('YYK: ST采集器已初始化');
+            }
+            
+            if (class_exists('YYK_ST_Display')) {
+                YYK_ST_Display::get_instance()->init();
+                error_log('YYK: ST显示已初始化');
+            }
+            
             if (class_exists('YYK_App_Diagnostic')) {
                 YYK_App_Diagnostic::get_instance();
+                error_log('YYK: 诊断工具已初始化');
+            }
+            
+            if (class_exists('YYK_App_Widget')) {
+                add_action('widgets_init', ['YYK_App_Widget', 'register']);
+                error_log('YYK: 小工具已注册');
             }
             
             error_log('YYK应用下载管理器: 初始化完成');
@@ -241,6 +167,7 @@ if (!class_exists('YYK_App_Download_Manager')) {
                 'includes/class-frontend.php',
                 'includes/class-diagnostic.php',
                 'includes/class-st-collector.php',
+                'includes/class-st-display.php',
             ];
             
             foreach ($files as $file) {
@@ -248,190 +175,279 @@ if (!class_exists('YYK_App_Download_Manager')) {
                 if (file_exists($file_path)) {
                     require_once $file_path;
                 } else {
-                    error_log('YYK应用下载管理器：找不到文件 ' . $file);
+                    error_log('YYK错误：找不到文件 ' . $file);
+                    add_action('admin_notices', function() use ($file) {
+                        if (current_user_can('manage_options')) {
+                            echo '<div class="notice notice-error"><p>';
+                            printf(__('应用下载管理器错误：找不到文件 %s', 'yyk-app-download'), esc_html($file));
+                            echo '</p></div>';
+                        }
+                    });
                 }
             }
         }
         
-        // ========== ST采集 AJAX 方法 ==========
-        
-        public function ajax_yyk_get_st_nonce() {
-            wp_send_json_success(['nonce' => wp_create_nonce('yyk_st_nonce')]);
-        }
-        
-        public function ajax_st_collect_categories() {
-            check_ajax_referer('yyk_st_nonce', 'nonce');
-            if (!class_exists('YYK_ST_Collector')) {
-                wp_send_json(['success' => false, 'message' => '采集类未加载']);
-                return;
-            }
-            $result = YYK_ST_Collector::get_instance()->fetch_categories();
-            wp_send_json($result);
-        }
-        
-        public function ajax_st_collect_games() {
-            check_ajax_referer('yyk_st_nonce', 'nonce');
-            if (!class_exists('YYK_ST_Collector')) {
-                wp_send_json(['success' => false, 'message' => '采集类未加载']);
-                return;
-            }
-            $page = intval($_POST['page'] ?? 1);
-            $limit = intval($_POST['limit'] ?? 20);
-            $result = YYK_ST_Collector::get_instance()->fetch_game_list($page, $limit);
-            wp_send_json($result);
-        }
-        
-        public function ajax_st_collect_reserve() {
-            check_ajax_referer('yyk_st_nonce', 'nonce');
-            if (!class_exists('YYK_ST_Collector')) {
-                wp_send_json(['success' => false, 'message' => '采集类未加载']);
-                return;
-            }
-            $page = intval($_POST['page'] ?? 1);
-            $limit = intval($_POST['limit'] ?? 20);
-            $result = YYK_ST_Collector::get_instance()->fetch_reserve_list($page, $limit);
-            wp_send_json($result);
-        }
-        
-        public function ajax_st_collect_rankings() {
-            check_ajax_referer('yyk_st_nonce', 'nonce');
-            if (!class_exists('YYK_ST_Collector')) {
-                wp_send_json(['success' => false, 'message' => '采集类未加载']);
-                return;
-            }
-            $toptype = intval($_POST['toptype'] ?? 0);
-            $days = intval($_POST['days'] ?? 7);
-            $limit = intval($_POST['limit'] ?? 20);
-            $result = YYK_ST_Collector::get_instance()->fetch_rankings($toptype, $days, $limit);
-            wp_send_json($result);
-        }
-        
-        public function ajax_st_collect_all() {
-            check_ajax_referer('yyk_st_nonce', 'nonce');
-            if (!class_exists('YYK_ST_Collector')) {
-                wp_send_json(['success' => false, 'message' => '采集类未加载']);
-                return;
-            }
-            $result = YYK_ST_Collector::get_instance()->collect_all();
-            wp_send_json_success(['message' => '一键采集完成', 'data' => $result]);
-        }
-        
-        public function ajax_st_save_settings() {
-            check_ajax_referer('yyk_st_nonce', 'nonce');
-            if (!class_exists('YYK_ST_Collector')) {
-                wp_send_json(['success' => false, 'message' => '采集类未加载']);
-                return;
-            }
-            $api_domain = sanitize_text_field($_POST['api_domain'] ?? '');
-            $cps_id = sanitize_text_field($_POST['cps_id'] ?? '');
-            YYK_ST_Collector::get_instance()->update_settings($api_domain, $cps_id);
-            wp_send_json_success(['message' => '设置已保存']);
-        }
-        
-        public function ajax_st_clear_logs() {
-            check_ajax_referer('yyk_st_nonce', 'nonce');
-            if (!class_exists('YYK_ST_Collector')) {
-                wp_send_json(['success' => false, 'message' => '采集类未加载']);
-                return;
-            }
-            YYK_ST_Collector::get_instance()->clear_logs();
-            wp_send_json_success(['message' => '日志已清空']);
-        }
-        
-        // ========== ST采集菜单 ==========
-        
-        public function add_st_collect_menu() {
-            add_submenu_page(
-                'edit.php?post_type=yyk_app_download',
-                __('ST采集', 'yyk-app-download'),
-                __('ST采集', 'yyk-app-download'),
-                'manage_options',
-                'yyk-st-collect',
-                [$this, 'render_st_collect_page']
-            );
-        }
-        
-        public function render_st_collect_page() {
-            if (!current_user_can('manage_options')) {
-                wp_die(__('您没有权限访问此页面。', 'yyk-app-download'));
-            }
-            require_once YYK_APP_PLUGIN_DIR . 'admin/partials/st-collect-page.php';
-        }
-        
-        // ========== 原有方法 ==========
-        
         public function enqueue_public_assets() {
-            wp_enqueue_style('yyk-app-public-style', YYK_APP_PLUGIN_URL . 'public/css/public-style.css', [], YYK_APP_VERSION);
-            wp_enqueue_script('yyk-app-public-script', YYK_APP_PLUGIN_URL . 'public/js/public-script.js', ['jquery'], YYK_APP_VERSION, true);
+            // 前端样式
+            wp_enqueue_style(
+                'yyk-app-public-style',
+                YYK_APP_PLUGIN_URL . 'public/css/public-style.css',
+                [],
+                YYK_APP_VERSION
+            );
+            
+            // 前端脚本
+            wp_enqueue_script(
+                'yyk-app-public-script',
+                YYK_APP_PLUGIN_URL . 'public/js/public-script.js',
+                ['jquery'],
+                YYK_APP_VERSION,
+                true
+            );
+            
+            // 本地化脚本
             wp_localize_script('yyk-app-public-script', 'yykAppAjax', [
                 'ajax_url' => admin_url('admin-ajax.php'),
-                'nonce' => wp_create_nonce('yyk_app_nonce')
+                'nonce' => wp_create_nonce('yyk_app_nonce'),
+                'loading_text' => __('加载中...', 'yyk-app-download'),
+                'error_text' => __('加载失败，请重试', 'yyk-app-download')
             ]);
         }
         
         public function enqueue_admin_assets($hook) {
             global $post_type;
             
-            if ($post_type === 'yyk_app_download' || $hook === 'post.php' || $hook === 'post-new.php') {
-                wp_enqueue_style('yyk-app-admin-style', YYK_APP_PLUGIN_URL . 'admin/css/admin-style.css', [], YYK_APP_VERSION);
-                wp_enqueue_script('yyk-app-admin-script', YYK_APP_PLUGIN_URL . 'admin/js/admin-script.js', ['jquery'], YYK_APP_VERSION, true);
+            if ($this->is_app_download_page($hook, $post_type)) {
+                wp_enqueue_style(
+                    'yyk-app-admin-style',
+                    YYK_APP_PLUGIN_URL . 'admin/css/admin-style.css',
+                    [],
+                    YYK_APP_VERSION
+                );
+                
+                wp_enqueue_script(
+                    'yyk-app-admin-script',
+                    YYK_APP_PLUGIN_URL . 'admin/js/admin-script.js',
+                    ['jquery'],
+                    YYK_APP_VERSION,
+                    true
+                );
+                
                 wp_localize_script('yyk-app-admin-script', 'yykAppAdmin', [
                     'ajax_url' => admin_url('admin-ajax.php'),
                     'nonce' => wp_create_nonce('yyk_app_admin_nonce')
                 ]);
-                if ($hook === 'post.php' || $hook === 'post-new.php') {
+                
+                if ('post.php' === $hook || 'post-new.php' === $hook) {
                     wp_enqueue_media();
                 }
             }
             
-            if ($hook === 'yyk_app_download_page_yyk-st-collect') {
-                wp_enqueue_style('yyk-st-collect-style', YYK_APP_PLUGIN_URL . 'admin/css/st-collect.css', [], YYK_APP_VERSION);
-                wp_enqueue_script('yyk-st-collect-script', YYK_APP_PLUGIN_URL . 'admin/js/st-collect.js', ['jquery'], YYK_APP_VERSION, true);
-                wp_localize_script('yyk-st-collect-script', 'yykStAjax', [
-                    'ajax_url' => admin_url('admin-ajax.php')
-                ]);
+            if ('toplevel_page_yyk-app-diagnostic' === $hook || false !== strpos($hook, 'yyk-st') || 'toplevel_page_yyk-app-dashboard' === $hook) {
+                wp_enqueue_style(
+                    'yyk-app-admin-style',
+                    YYK_APP_PLUGIN_URL . 'admin/css/admin-style.css',
+                    [],
+                    YYK_APP_VERSION
+                );
             }
+        }
+        
+        private function is_app_download_page($hook, $post_type) {
+            return 'yyk_app_download' === $post_type || 
+                   'edit.php' === $hook || 
+                   'post.php' === $hook || 
+                   'post-new.php' === $hook ||
+                   false !== strpos($hook, 'yyk_app') ||
+                   false !== strpos($hook, 'yyk-st');
         }
         
         public function add_plugin_action_links($links) {
-            $settings_link = '<a href="' . admin_url('edit.php?post_type=yyk_app_download&page=yyk-st-collect') . '">' . __('ST采集', 'yyk-app-download') . '</a>';
-            $diagnostic_link = '<a href="' . admin_url('admin.php?page=yyk-app-diagnostic') . '">' . __('诊断', 'yyk-app-download') . '</a>';
+            $settings_link = '<a href="' . admin_url('edit.php?post_type=yyk_app_download&page=yyk-app-diagnostic') . '">' . __('诊断', 'yyk-app-download') . '</a>';
+            $st_link = '<a href="' . admin_url('edit.php?post_type=yyk_app_download&page=yyk-st-collector') . '">' . __('ST采集', 'yyk-app-download') . '</a>';
+            array_unshift($links, $st_link);
             array_unshift($links, $settings_link);
-            array_unshift($links, $diagnostic_link);
             return $links;
         }
         
-        public function add_diagnostic_page() {
+        public function add_admin_menu() {
             add_menu_page(
-                __('应用下载诊断', 'yyk-app-download'),
-                __('应用下载诊断', 'yyk-app-download'),
+                '应用下载管理',
+                '应用下载管理',
                 'manage_options',
-                'yyk-app-diagnostic',
-                [$this, 'render_diagnostic_page'],
-                'dashicons-embed-generic',
-                100
+                'yyk-app-dashboard',
+                [$this, 'render_dashboard'],
+                'dashicons-download',
+                30
+            );
+            
+            add_submenu_page(
+                'yyk-app-dashboard',
+                '数据统计',
+                '数据统计',
+                'manage_options',
+                'yyk-app-dashboard',
+                [$this, 'render_dashboard']
             );
         }
         
-        public function render_diagnostic_page() {
-            if (!current_user_can('manage_options')) {
-                wp_die(__('您没有权限访问此页面。', 'yyk-app-download'));
+        public function render_dashboard() {
+            global $wpdb;
+            
+            // 获取统计数据
+            $total_apps = wp_count_posts('yyk_app_download')->publish;
+            $total_categories = wp_count_terms('yyk_app_category', ['hide_empty' => false]);
+            
+            // 获取ST采集数据
+            $st_table = $wpdb->prefix . 'yyk_st_games';
+            $st_table_exists = $wpdb->get_var("SHOW TABLES LIKE '$st_table'");
+            $st_total = $st_table_exists ? $wpdb->get_var("SELECT COUNT(*) FROM $st_table") : 0;
+            $st_published = $wpdb->get_var("SELECT COUNT(*) FROM $st_table WHERE post_id > 0");
+            $st_unpublished = $st_total - $st_published;
+            
+            // 获取分类统计
+            $categories = get_terms([
+                'taxonomy' => 'yyk_app_category',
+                'hide_empty' => true,
+                'orderby' => 'count',
+                'order' => 'DESC',
+                'number' => 10
+            ]);
+            
+            // 获取最新游戏
+            $recent_apps = get_posts([
+                'post_type' => 'yyk_app_download',
+                'post_status' => 'publish',
+                'posts_per_page' => 10,
+                'orderby' => 'date',
+                'order' => 'DESC'
+            ]);
+            
+            ?>
+            <div class="wrap">
+                <h1>应用下载管理 - 数据统计</h1>
+                
+                <div class="yyk-dashboard-stats" style="margin: 20px 0;">
+                    <div class="yyk-stat-card" style="background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); display: inline-block; width: 23%; margin-right: 2%; vertical-align: top;">
+                        <h3 style="margin: 0 0 10px 0; color: #666;">已发布游戏</h3>
+                        <div style="font-size: 36px; font-weight: bold; color: #2271b1;"><?php echo number_format($total_apps); ?></div>
+                        <p style="margin: 10px 0 0 0; color: #999;">WordPress文章</p>
+                    </div>
+                    
+                    <div class="yyk-stat-card" style="background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); display: inline-block; width: 23%; margin-right: 2%; vertical-align: top;">
+                        <h3 style="margin: 0 0 10px 0; color: #666;">游戏分类</h3>
+                        <div style="font-size: 36px; font-weight: bold; color: #2271b1;"><?php echo number_format($total_categories); ?></div>
+                        <p style="margin: 10px 0 0 0; color: #999;">分类总数</p>
+                    </div>
+                    
+                    <div class="yyk-stat-card" style="background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); display: inline-block; width: 23%; margin-right: 2%; vertical-align: top;">
+                        <h3 style="margin: 0 0 10px 0; color: #666;">ST采集总数</h3>
+                        <div style="font-size: 36px; font-weight: bold; color: #00a32a;"><?php echo number_format($st_total); ?></div>
+                        <p style="margin: 10px 0 0 0; color: #999;">已采集游戏</p>
+                    </div>
+                    
+                    <div class="yyk-stat-card" style="background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); display: inline-block; width: 23%; vertical-align: top;">
+                        <h3 style="margin: 0 0 10px 0; color: #666;">未发布游戏</h3>
+                        <div style="font-size: 36px; font-weight: bold; color: #d63638;"><?php echo number_format($st_unpublished); ?></div>
+                        <p style="margin: 10px 0 0 0; color: #999;">待发布</p>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 30px;">
+                    <div style="background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); display: inline-block; width: 48%; margin-right: 2%; vertical-align: top;">
+                        <h2 style="margin-top: 0;">热门分类 TOP 10</h2>
+                        <table class="wp-list-table widefat fixed striped">
+                            <thead>
+                                <tr>
+                                    <th>分类名称</th>
+                                    <th style="text-align: right;">游戏数量</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php if (!empty($categories)): ?>
+                                    <?php foreach ($categories as $category): ?>
+                                        <tr>
+                                            <td>
+                                                <a href="<?php echo get_term_link($category); ?>" target="_blank">
+                                                    <?php echo esc_html($category->name); ?>
+                                                </a>
+                                            </td>
+                                            <td style="text-align: right;"><?php echo number_format($category->count); ?></td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                <?php else: ?>
+                                    <tr>
+                                        <td colspan="2">暂无分类数据</td>
+                                    </tr>
+                                <?php endif; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    <div style="background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); display: inline-block; width: 48%; vertical-align: top;">
+                        <h2 style="margin-top: 0;">最新发布游戏</h2>
+                        <table class="wp-list-table widefat fixed striped">
+                            <thead>
+                                <tr>
+                                    <th>游戏名称</th>
+                                    <th style="text-align: right;">发布时间</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <?php if (!empty($recent_apps)): ?>
+                                    <?php foreach ($recent_apps as $app): ?>
+                                        <tr>
+                                            <td>
+                                                <a href="<?php echo get_permalink($app->ID); ?>" target="_blank">
+                                                    <?php echo esc_html($app->post_title); ?>
+                                                </a>
+                                            </td>
+                                            <td style="text-align: right;"><?php echo get_the_date('Y-m-d H:i', $app->ID); ?></td>
+                                        </tr>
+                                    <?php endforeach; ?>
+                                <?php else: ?>
+                                    <tr>
+                                        <td colspan="2">暂无游戏数据</td>
+                                    </tr>
+                                <?php endif; ?>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+                
+                <div style="margin-top: 30px;">
+                    <h2>快捷操作</h2>
+                    <div style="background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                        <a href="<?php echo admin_url('edit.php?post_type=yyk_app_download'); ?>" class="button button-primary" style="margin-right: 10px;">管理游戏</a>
+                        <a href="<?php echo admin_url('edit-tags.php?taxonomy=yyk_app_category&post_type=yyk_app_download'); ?>" class="button" style="margin-right: 10px;">管理分类</a>
+                        <a href="<?php echo admin_url('edit.php?post_type=yyk_app_download&page=yyk-st-collector'); ?>" class="button" style="margin-right: 10px;">ST游戏采集</a>
+                        <a href="<?php echo admin_url('edit.php?post_type=yyk_app_download&page=yyk-app-diagnostic'); ?>" class="button">诊断工具</a>
+                    </div>
+                </div>
+            </div>
+            <?php
+        }
+        
+        public function handle_download_record() {
+            check_ajax_referer('yyk_app_nonce', 'nonce');
+            
+            $app_id = isset($_POST['app_id']) ? intval($_POST['app_id']) : 0;
+            
+            if ($app_id > 0) {
+                $download_count = get_post_meta($app_id, '_yyk_app_download_count', true);
+                $download_count = $download_count ? intval($download_count) + 1 : 1;
+                update_post_meta($app_id, '_yyk_app_download_count', $download_count);
+                
+                wp_send_json_success([
+                    'download_count' => $download_count,
+                    'message' => __('下载记录已更新', 'yyk-app-download')
+                ]);
             }
-            if (class_exists('YYK_App_Diagnostic')) {
-                YYK_App_Diagnostic::get_instance()->render_diagnostic_page();
-            } else {
-                echo '<div class="wrap"><h1>诊断页面</h1><p>诊断类未加载</p></div>';
-            }
+            
+            wp_send_json_error(['message' => __('无效的应用ID', 'yyk-app-download')]);
         }
     }
     
     // 初始化插件
     YYK_App_Download_Manager::get_instance();
-    
-    // 确保小工具被注册
-    add_action('widgets_init', function() {
-        if (class_exists('YYK_App_Widget')) {
-            register_widget('YYK_App_Widget');
-        }
-    }, 99);
 }
