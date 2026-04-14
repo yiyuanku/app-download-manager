@@ -1,7 +1,15 @@
 <?php
-/**
- * 应用下载前端显示类
- */
+/*============================================================
+ =  🚀 项目名称：壹元库应用下载插件
+ =  📦 模块名称：前端显示模块
+ =  📄 文件：class-frontend.php
+ =  👤 作者：壹元库 <815116566@qq.com>
+ =  🌐 官网：https://yiyuanku.cn
+ =  🔢 版本：1.0.0
+ =  📅 日期：2026-04-15
+ =  📝 说明：前端显示类，负责应用列表、卡片、轮播、归档页等前端展示
+ =  © 版权：2026 壹元库. All Rights Reserved.
+ ============================================================*/
 
 if (!defined('ABSPATH')) {
     exit;
@@ -277,6 +285,8 @@ if (!class_exists('YYK_App_Frontend')) {
             
             if ('gamebox' === $style) {
                 self::get_template('gamebox.php', $args);
+            } elseif ('compact' === $style) {
+                self::get_template('compact.php', $args);
             } else {
                 self::get_template('card.php', $args);
             }
@@ -338,7 +348,17 @@ if (!class_exists('YYK_App_Frontend')) {
                 $layout_class = 'yyk-layout-' . sanitize_html_class($args['layout']);
                 $icon_class = 'yyk-icon-' . sanitize_html_class($args['icon_size']);
                 
+                // 如果是compact样式，自动使用compact-carousel布局
+                if ('compact' === $args['style'] && $args['layout'] === 'carousel') {
+                    $layout_class = 'yyk-layout-compact-carousel';
+                }
+                
                 echo '<div class="yyk-widget-container ' . esc_attr($layout_class) . ' ' . esc_attr($columns_class) . ' ' . esc_attr($style_class) . ' ' . esc_attr($icon_class) . '">';
+                
+                // 添加轮播按钮
+                if (in_array($args['layout'], ['carousel', 'compact-carousel']) || ('compact' === $args['style'] && $args['layout'] === 'carousel')) {
+                    echo '<button class="yyk-carousel-btn yyk-carousel-btn-prev" type="button">&lt;</button>';
+                }
                 
                 if ($args['layout'] === 'list') {
                     echo '<div class="yyk-widget-list">';
@@ -354,6 +374,11 @@ if (!class_exists('YYK_App_Frontend')) {
                         echo self::render_app_card(get_the_ID(), $args['style'], $args['icon_size']);
                     }
                     echo '</div>';
+                }
+                
+                // 添加轮播按钮
+                if (in_array($args['layout'], ['carousel', 'compact-carousel']) || ('compact' === $args['style'] && $args['layout'] === 'carousel')) {
+                    echo '<button class="yyk-carousel-btn yyk-carousel-btn-next" type="button">&gt;</button>';
                 }
                 
                 echo '</div>';

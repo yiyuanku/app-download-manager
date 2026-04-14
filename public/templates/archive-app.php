@@ -1,8 +1,16 @@
 <?php
-/**
- * 应用归档页模板 - 完整版（含热门应用下载按钮）
- * 功能：热门应用带下载按钮 + 实时筛选 + 两列布局 + 数字分页
- */
+/*============================================================
+ =  🚀 项目名称：壹元库应用下载插件
+ =  📦 模块名称：归档页模板模块
+ =  📄 文件：archive-app.php
+ =  👤 作者：壹元库 <815116566@qq.com>
+ =  🌐 官网：https://yiyuanku.cn
+ =  🔢 版本：1.0.0
+ =  📅 日期：2026-04-15
+ =  📝 说明：应用归档页模板，包含热门应用轮播、应用列表、筛选器、分页等功能
+ =  © 版权：2026 壹元库. All Rights Reserved.
+ ============================================================*/
+
 if (!defined('ABSPATH')) {
     exit;
 }
@@ -65,13 +73,44 @@ if (!$category_header_bg) {
     $category_header_bg = $game_backgrounds[$random_index];
 }
 
-// 获取所有应用分类
+// 获取所有应用分类，按层级结构组织
 $all_categories = get_terms([
     'taxonomy' => 'yyk_app_category',
     'hide_empty' => true,
     'orderby' => 'name',
     'order' => 'ASC',
+    'hierarchical' => true,
 ]);
+
+// 构建分类层级树
+$category_tree = [];
+$categories_by_id = [];
+
+foreach ($all_categories as $category) {
+    $categories_by_id[$category->term_id] = $category;
+    if ($category->parent == 0) {
+        $category_tree[$category->term_id] = [
+            'category' => $category,
+            'children' => []
+        ];
+    }
+}
+
+// 添加子分类
+foreach ($all_categories as $category) {
+    if ($category->parent != 0 && isset($categories_by_id[$category->parent])) {
+        $parent_id = $category->parent;
+        if (isset($category_tree[$parent_id])) {
+            $category_tree[$parent_id]['children'][] = $category;
+        } else {
+            // 父分类不在树中（可能为空的父分类），直接添加到根级
+            $category_tree[$category->term_id] = [
+                'category' => $category,
+                'children' => []
+            ];
+        }
+    }
+}
 
 // 显示热门应用
 $hot_apps = get_posts([
@@ -82,6 +121,16 @@ $hot_apps = get_posts([
     'orderby' => 'date',
     'order' => 'DESC',
 ]);
+
+// 如果没有热门应用，显示最近更新的
+if (empty($hot_apps)) {
+    $hot_apps = get_posts([
+        'post_type' => 'yyk_app_download',
+        'posts_per_page' => 6,
+        'orderby' => 'date',
+        'order' => 'DESC',
+    ]);
+}
 
 // 设置每页显示20个应用
 $apps_per_page = 20;
@@ -204,11 +253,41 @@ $total_apps = $app_query->found_posts;
         </div>
     </div>
     
+    <!-- 热门展示紧凑轮播 -->
+    <div class="yyk-partner-carousel-wrapper" style="background: white; border-radius: 16px; padding: 20px; margin-bottom: 30px; position: relative; box-shadow: 0 4px 12px rgba(0,0,0,0.08); border: 1px solid #e8e8e8;">
+        <div style="text-align: center; margin-bottom: 15px; position: relative; display: flex; align-items: center; justify-content: center;">
+            <div class="yyk-hot-title-line yyk-hot-title-line-left"></div>
+            <h3 style="color: #333; font-size: 16px; font-weight: 600; margin: 0 15px; white-space: nowrap;">热门展示</h3>
+            <div class="yyk-hot-title-line yyk-hot-title-line-right"></div>
+        </div>
+        <?php 
+        if (class_exists('YYK_App_Frontend')) {
+            echo YYK_App_Frontend::render_app_list([
+                'style' => 'compact',
+                'layout' => 'carousel',
+                'count' => 12,
+                'orderby' => 'date',
+                'order' => 'DESC'
+            ]);
+        }
+        ?>
+        <div class="yyk-partner-left-fade"></div>
+        <div class="yyk-partner-right-fade"></div>
+        <a href="<?php echo get_post_type_archive_link('yyk_app_download'); ?>" class="yyk-partner-view-more">
+            查看全部
+        </a>
+    </div>
+    
     <div class="yyk-archive-content">
         <!-- 左侧边栏 - 包含分类和热门应用 -->
         <div class="yyk-archive-sidebar">
-            <h3><?php _e('应用分类', 'yyk-app-download'); ?></h3>
-            <?php if ($all_categories && !is_wp_error($all_categories)): ?>
+            <h3>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="vertical-align: -3px; margin-right: 8px;">
+                    <path d="M3 13h2v-2H3v2zm0 4h2v-2H3v2zm0-8h2V7H3v2zm4 4h14v-2H7v2zm0 4h14v-2H7v2zM7 7v2h14V7H7z"/>
+                </svg>
+                <?php _e('应用分类', 'yyk-app-download'); ?>
+            </h3>
+            <?php if ($category_tree && !is_wp_error($category_tree)): ?>
                 <ul class="yyk-category-menu">
                     <li>
                         <a href="<?php echo get_post_type_archive_link('yyk_app_download'); ?>" 
@@ -222,16 +301,49 @@ $total_apps = $app_query->found_posts;
                             <?php endif; ?>
                         </a>
                     </li>
-                    <?php foreach ($all_categories as $category): ?>
-                        <?php if ($category->count > 0): ?>
-                            <li>
+                    <?php foreach ($category_tree as $item): ?>
+                        <?php 
+                        $category = $item['category'];
+                        $children = $item['children'];
+                        $has_children = !empty($children);
+                        $is_current_parent = false;
+                        
+                        if ($current_category) {
+                            // 检查当前分类是否是这个父分类的子分类
+                            $ancestors = get_ancestors($current_category->term_id, 'yyk_app_category');
+                            $is_current_parent = in_array($category->term_id, $ancestors);
+                        }
+                        
+                        $is_expanded = $is_current_parent || ($current_category && $current_category->term_id == $category->term_id);
+                        ?>
+                        <li class="yyk-category-parent <?php echo $has_children ? 'yyk-has-children' : ''; ?>">
+                            <?php if ($has_children): ?>
+                                <div class="yyk-category-clickable" data-toggle="yyk-category-<?php echo $category->term_id; ?>">
+                                    <span class="yyk-category-name"><?php echo esc_html($category->name); ?></span>
+                                    <span class="yyk-count">(<?php echo $category->count; ?>)</span>
+                                </div>
+                                
+                                <ul class="yyk-category-children <?php echo $is_expanded ? 'yyk-show' : ''; ?>" id="yyk-category-<?php echo $category->term_id; ?>">
+                                    <?php foreach ($children as $child): ?>
+                                        <?php if ($child->count > 0): ?>
+                                            <li class="yyk-category-child">
+                                                <a href="<?php echo get_term_link($child); ?>" 
+                                                   <?php if ($current_category && $current_category->term_id == $child->term_id): ?>class="yyk-active"<?php endif; ?>>
+                                                    <span class="yyk-category-name"><?php echo esc_html($child->name); ?></span>
+                                                    <span class="yyk-count">(<?php echo $child->count; ?>)</span>
+                                                </a>
+                                            </li>
+                                        <?php endif; ?>
+                                    <?php endforeach; ?>
+                                </ul>
+                            <?php else: ?>
                                 <a href="<?php echo get_term_link($category); ?>" 
                                    <?php if ($current_category && $current_category->term_id == $category->term_id): ?>class="yyk-active"<?php endif; ?>>
                                     <span class="yyk-category-name"><?php echo esc_html($category->name); ?></span>
                                     <span class="yyk-count">(<?php echo $category->count; ?>)</span>
                                 </a>
-                            </li>
-                        <?php endif; ?>
+                            <?php endif; ?>
+                        </li>
                     <?php endforeach; ?>
                 </ul>
             <?php endif; ?>
@@ -240,89 +352,66 @@ $total_apps = $app_query->found_posts;
             <?php if ($hot_apps): ?>
                 <div class="yyk-hot-apps">
                     <div class="yyk-hot-apps-header">
-                        <h3><?php _e('热门应用', 'yyk-app-download'); ?></h3>
-                        <a href="<?php echo get_post_type_archive_link('yyk_app_download'); ?>?sort=hot" class="yyk-view-more">
-                            <?php _e('更多', 'yyk-app-download'); ?> →
+                        <h3>
+                            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor" style="vertical-align: -3px; margin-right: 8px;">
+                                <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
+                            </svg>
+                            <?php _e('热门应用', 'yyk-app-download'); ?>
+                        </h3>
+                        <a href="<?php echo get_post_type_archive_link('yyk_app_download'); ?>?sort=hot" class="yyk-widget-more">
+                            <?php _e('更多', 'yyk-app-download'); ?>
                         </a>
                     </div>
-                    <div class="yyk-hot-apps-list">
+                    <ul class="yyk-hot-apps-list">
                         <?php foreach ($hot_apps as $app): ?>
                             <?php
-                            $app_icon_id = get_post_meta($app->ID, '_yyk_app_icon_id', true);
-                            $app_icon_url = $app_icon_id ? wp_get_attachment_url($app_icon_id) : '';
+                            // 使用正确的方法获取图标URL
+                            $app_icon_url = YYK_App_Frontend::get_app_icon_url($app->ID, 'small');
                             
                             // 获取应用下载链接
-                            $download_links = get_post_meta($app->ID, '_yyk_app_download_links', true);
-                            $primary_download_link = '';
+                            $primary_download_link = get_post_meta($app->ID, '_yyk_app_download_url', true);
                             
-                            if (is_array($download_links) && !empty($download_links)) {
-                                // 取第一个下载链接作为主要下载链接
-                                $first_link = reset($download_links);
-                                $primary_download_link = isset($first_link['url']) ? $first_link['url'] : '';
-                            }
-                            
-                            // 如果没有图标，使用默认图标
-                            if (!$app_icon_url) {
-                                $default_icon_path = plugin_dir_path(__FILE__) . '../../../assets/images/default-icon.png';
-                                $default_icon_url = plugins_url('../../assets/images/default-icon.png', __FILE__);
-                                
-                                if (file_exists($default_icon_path)) {
-                                    $app_icon_url = $default_icon_url;
-                                } else {
-                                    $app_icon_url = 'https://via.placeholder.com/40/0073aa/ffffff?text=APP';
-                                }
-                            }
-                            
-                            // 获取应用简介
-                            $app_excerpt = get_the_excerpt($app->ID);
-                            if (empty($app_excerpt)) {
-                                $app_excerpt = wp_trim_words(get_post_field('post_content', $app->ID), 12);
-                            }
+                            // 获取版本和大小
+                            $version = get_post_meta($app->ID, '_yyk_app_version', true);
+                            $size = get_post_meta($app->ID, '_yyk_app_size', true);
                             ?>
-                            <div class="yyk-hot-app-item">
-                                <div class="yyk-hot-app-left">
-                                    <div class="yyk-hot-app-icon">
-                                        <a href="<?php echo get_permalink($app->ID); ?>">
-                                            <img src="<?php echo esc_url($app_icon_url); ?>" 
-                                                 alt="<?php echo esc_attr($app->post_title); ?>"
-                                                 width="40" height="40">
-                                        </a>
-                                    </div>
+                            <li class="yyk-hot-app-item yyk-list-item">
+                                <div class="yyk-list-icon">
+                                    <a href="<?php echo get_permalink($app->ID); ?>">
+                                        <img src="<?php echo esc_url($app_icon_url); ?>" 
+                                             alt="<?php echo esc_attr($app->post_title); ?>">
+                                    </a>
+                                </div>
+                                
+                                <div class="yyk-list-content">
+                                    <h4 class="yyk-list-title">
+                                        <a href="<?php echo get_permalink($app->ID); ?>"><?php echo esc_html($app->post_title); ?></a>
+                                    </h4>
                                     
-                                    <div class="yyk-hot-app-info">
-                                        <h4 class="yyk-hot-app-title">
-                                            <a href="<?php echo get_permalink($app->ID); ?>"><?php echo esc_html($app->post_title); ?></a>
-                                        </h4>
-                                        <?php if ($app_excerpt): ?>
-                                            <p class="yyk-hot-app-excerpt"><?php echo esc_html($app_excerpt); ?></p>
+                                    <div class="yyk-list-meta">
+                                        <?php if ($version): ?>
+                                            <span class="yyk-list-version">v<?php echo esc_html($version); ?></span>
+                                        <?php endif; ?>
+                                        
+                                        <?php if ($size): ?>
+                                            <span class="yyk-list-size"><?php echo esc_html($size); ?></span>
                                         <?php endif; ?>
                                     </div>
                                 </div>
                                 
-                                <!-- 下载按钮 - 右侧 -->
                                 <?php if ($primary_download_link): ?>
-                                    <div class="yyk-hot-app-download">
+                                    <div class="yyk-list-actions">
                                         <a href="<?php echo esc_url($primary_download_link); ?>" 
-                                           class="yyk-download-btn" 
-                                           target="_blank"
-                                           title="<?php printf(__('下载 %s', 'yyk-app-download'), esc_attr($app->post_title)); ?>">
-                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="white">
-                                                <path d="M19 9h-4V3H9v6H5l7 7 7-7zM5 18v2h14v-2H5z"/>
-                                            </svg>
-                                            <span><?php _e('下载', 'yyk-app-download'); ?></span>
-                                        </a>
-                                    </div>
-                                <?php else: ?>
-                                    <div class="yyk-hot-app-detail">
-                                        <a href="<?php echo get_permalink($app->ID); ?>" 
-                                           class="yyk-detail-btn">
-                                            <?php _e('详情', 'yyk-app-download'); ?>
+                                           class="yyk-list-download" 
+                                           target="_blank" 
+                                           rel="nofollow">
+                                            <?php _e('下载', 'yyk-app-download'); ?>
                                         </a>
                                     </div>
                                 <?php endif; ?>
-                            </div>
+                            </li>
                         <?php endforeach; ?>
-                    </div>
+                    </ul>
                 </div>
             <?php endif; ?>
         </div>
@@ -433,21 +522,45 @@ $total_apps = $app_query->found_posts;
             <!-- 数字分页 - 超过20个应用时显示 -->
             <?php if ($total_apps > $apps_per_page): ?>
                 <div class="yyk-pagination">
-                    <?php
-                    $total_pages = $app_query->max_num_pages;
-                    $current_page = max(1, $paged);
-                    
-                    echo paginate_links(array(
-                        'base'      => str_replace(999999999, '%#%', esc_url(get_pagenum_link(999999999))),
-                        'format'    => '?paged=%#%',
-                        'current'   => $current_page,
-                        'total'     => $total_pages,
-                        'prev_text' => __('« 上一页', 'yyk-app-download'),
-                        'next_text' => __('下一页 »', 'yyk-app-download'),
-                        'mid_size'  => 2,
-                        'type'      => 'list',
-                    ));
-                    ?>
+                    <nav class="yyk-nav-links">
+                        <?php
+                        $total_pages = $app_query->max_num_pages;
+                        $current_page = max(1, $paged);
+                        
+                        $pagination_args = array(
+                            'base'      => str_replace(999999999, '%#%', esc_url(get_pagenum_link(999999999))),
+                            'format'    => '?paged=%#%',
+                            'current'   => $current_page,
+                            'total'     => $total_pages,
+                            'prev_text' => '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="15 18 9 12 15 6"></polyline></svg> 上一页',
+                            'next_text' => '下一页 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="9 18 15 12 9 6"></polyline></svg>',
+                            'mid_size'  => 2,
+                            'type'      => 'array',
+                        );
+                        
+                        $pagination_links = paginate_links($pagination_args);
+                        
+                        if ($pagination_links):
+                            echo '<ul class="yyk-nav-list">';
+                            foreach ($pagination_links as $link):
+                                echo '<li class="yyk-nav-item">';
+                                if (strpos($link, 'current') !== false):
+                                    echo str_replace('class="page-numbers current"', 'class="yyk-nav-page yyk-nav-current"', $link);
+                                elseif (strpos($link, 'dots') !== false):
+                                    echo str_replace('class="page-numbers dots"', 'class="yyk-nav-page yyk-nav-dots"', $link);
+                                elseif (strpos($link, 'prev') !== false):
+                                    echo str_replace('class="prev page-numbers"', 'class="yyk-nav-page yyk-nav-prev"', $link);
+                                elseif (strpos($link, 'next') !== false):
+                                    echo str_replace('class="next page-numbers"', 'class="yyk-nav-page yyk-nav-next"', $link);
+                                else:
+                                    echo str_replace('class="page-numbers"', 'class="yyk-nav-page yyk-nav-link"', $link);
+                                endif;
+                                echo '</li>';
+                            endforeach;
+                            echo '</ul>';
+                        endif;
+                        ?>
+                    </nav>
                 </div>
             <?php endif; ?>
         </div>
@@ -455,3 +568,20 @@ $total_apps = $app_query->found_posts;
 </div>
 
 <?php get_footer(); ?>
+
+<script type="text/javascript">
+jQuery(document).ready(function($) {
+    // 分类展开/收起功能 - 直接点击父分类
+    $('.yyk-category-clickable').on('click', function(e) {
+        e.preventDefault();
+        
+        var $toggle = $(this);
+        var targetId = $toggle.data('toggle');
+        var $children = $('#' + targetId);
+        
+        // 切换展开状态
+        $toggle.toggleClass('yyk-expanded');
+        $children.toggleClass('yyk-show');
+    });
+});
+</script>

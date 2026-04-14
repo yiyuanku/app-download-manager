@@ -1,10 +1,10 @@
 <?php
 /**
  * Plugin Name: 应用下载管理器 (YYK)
- * Plugin URI: https://yourwebsite.com/
+ * Plugin URI: https://1ybbk.cn/
  * Description: 专业的应用下载管理插件，支持卡片样式和游戏盒子样式展示，集成ST手游采集
- * Version: 0.1.0
- * Author: 您的名字
+ * Version: 1.0.0
+ * Author: 壹元库
  * License: GPL v2 or later
  * Text Domain: yyk-app-download
  */
@@ -274,14 +274,14 @@ if (!class_exists('YYK_App_Download_Manager')) {
         public function enqueue_admin_assets($hook) {
             global $post_type;
             
+            wp_enqueue_style(
+                'yyk-app-admin-style',
+                YYK_APP_PLUGIN_URL . 'admin/css/admin-style.css',
+                [],
+                YYK_APP_VERSION
+            );
+            
             if ($this->is_app_download_page($hook, $post_type)) {
-                wp_enqueue_style(
-                    'yyk-app-admin-style',
-                    YYK_APP_PLUGIN_URL . 'admin/css/admin-style.css',
-                    [],
-                    YYK_APP_VERSION
-                );
-                
                 wp_enqueue_script(
                     'yyk-app-admin-script',
                     YYK_APP_PLUGIN_URL . 'admin/js/admin-script.js',
@@ -299,15 +299,6 @@ if (!class_exists('YYK_App_Download_Manager')) {
                     wp_enqueue_media();
                 }
             }
-            
-            if ('toplevel_page_yyk-app-diagnostic' === $hook || false !== strpos($hook, 'yyk-st') || 'toplevel_page_yyk-app-dashboard' === $hook) {
-                wp_enqueue_style(
-                    'yyk-app-admin-style',
-                    YYK_APP_PLUGIN_URL . 'admin/css/admin-style.css',
-                    [],
-                    YYK_APP_VERSION
-                );
-            }
         }
         
         private function is_app_download_page($hook, $post_type) {
@@ -316,7 +307,8 @@ if (!class_exists('YYK_App_Download_Manager')) {
                    'post.php' === $hook || 
                    'post-new.php' === $hook ||
                    false !== strpos($hook, 'yyk_app') ||
-                   false !== strpos($hook, 'yyk-st');
+                   false !== strpos($hook, 'yyk-st') ||
+                   false !== strpos($hook, 'yyk-app-dashboard');
         }
         
         public function add_plugin_action_links($links) {
@@ -328,39 +320,50 @@ if (!class_exists('YYK_App_Download_Manager')) {
         }
         
         public function add_admin_menu() {
-            add_menu_page(
-                '应用下载管理',
-                '应用下载管理',
+            add_submenu_page(
+                'edit.php?post_type=yyk_app_download',
+                '数据统计',
+                '数据统计',
                 'manage_options',
                 'yyk-app-dashboard',
                 [$this, 'render_dashboard'],
-                'dashicons-download',
-                30
+                0
             );
             
             add_submenu_page(
-                'yyk-app-dashboard',
-                '数据统计',
-                '数据统计',
+                'edit.php?post_type=yyk_app_download',
+                '使用教程',
+                '使用教程',
                 'manage_options',
-                'yyk-app-dashboard',
-                [$this, 'render_dashboard']
+                'yyk-app-tutorial',
+                [$this, 'render_tutorial'],
+                5
             );
         }
         
         public function render_dashboard() {
             global $wpdb;
             
+            // 添加页面类名
+            add_filter('admin_body_class', function($classes) {
+                return $classes . ' yyk-dashboard-page';
+            });
+            
             // 获取统计数据
             $total_apps = wp_count_posts('yyk_app_download')->publish;
             $total_categories = wp_count_terms('yyk_app_category', ['hide_empty' => false]);
             
             // 获取ST采集数据
-            $st_table = $wpdb->prefix . 'yyk_st_games';
+            $st_table = $wpdb->prefix . 'yyk_games';
             $st_table_exists = $wpdb->get_var("SHOW TABLES LIKE '$st_table'");
-            $st_total = $st_table_exists ? $wpdb->get_var("SELECT COUNT(*) FROM $st_table") : 0;
-            $st_published = $wpdb->get_var("SELECT COUNT(*) FROM $st_table WHERE post_id > 0");
-            $st_unpublished = $st_total - $st_published;
+            $st_total = 0;
+            $st_published = 0;
+            $st_unpublished = 0;
+            if ($st_table_exists) {
+                $st_total = $wpdb->get_var("SELECT COUNT(*) FROM $st_table");
+                $st_published = $wpdb->get_var("SELECT COUNT(*) FROM $st_table WHERE post_id > 0");
+                $st_unpublished = $st_total - $st_published;
+            }
             
             // 获取分类统计
             $categories = get_terms([
@@ -381,108 +384,182 @@ if (!class_exists('YYK_App_Download_Manager')) {
             ]);
             
             ?>
-            <div class="wrap">
-                <h1>应用下载管理 - 数据统计</h1>
-                
-                <div class="yyk-dashboard-stats" style="margin: 20px 0;">
-                    <div class="yyk-stat-card" style="background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); display: inline-block; width: 23%; margin-right: 2%; vertical-align: top;">
-                        <h3 style="margin: 0 0 10px 0; color: #666;">已发布游戏</h3>
-                        <div style="font-size: 36px; font-weight: bold; color: #2271b1;"><?php echo number_format($total_apps); ?></div>
-                        <p style="margin: 10px 0 0 0; color: #999;">WordPress文章</p>
+            <div class="wrap yyk-dashboard-page-wrap">
+            <div class="yyk-dashboard-wrapper">
+                <div class="yyk-dashboard-header">
+                    <div class="yyk-dashboard-icon">
+                        <span class="dashicons dashicons-chart-bar"></span>
                     </div>
-                    
-                    <div class="yyk-stat-card" style="background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); display: inline-block; width: 23%; margin-right: 2%; vertical-align: top;">
-                        <h3 style="margin: 0 0 10px 0; color: #666;">游戏分类</h3>
-                        <div style="font-size: 36px; font-weight: bold; color: #2271b1;"><?php echo number_format($total_categories); ?></div>
-                        <p style="margin: 10px 0 0 0; color: #999;">分类总数</p>
-                    </div>
-                    
-                    <div class="yyk-stat-card" style="background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); display: inline-block; width: 23%; margin-right: 2%; vertical-align: top;">
-                        <h3 style="margin: 0 0 10px 0; color: #666;">ST采集总数</h3>
-                        <div style="font-size: 36px; font-weight: bold; color: #00a32a;"><?php echo number_format($st_total); ?></div>
-                        <p style="margin: 10px 0 0 0; color: #999;">已采集游戏</p>
-                    </div>
-                    
-                    <div class="yyk-stat-card" style="background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); display: inline-block; width: 23%; vertical-align: top;">
-                        <h3 style="margin: 0 0 10px 0; color: #666;">未发布游戏</h3>
-                        <div style="font-size: 36px; font-weight: bold; color: #d63638;"><?php echo number_format($st_unpublished); ?></div>
-                        <p style="margin: 10px 0 0 0; color: #999;">待发布</p>
+                    <div class="yyk-dashboard-title-wrapper">
+                        <h1>应用下载数据统计</h1>
+                        <p>查看您的应用下载、分类和采集统计数据</p>
                     </div>
                 </div>
                 
-                <div style="margin-top: 30px;">
-                    <div style="background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); display: inline-block; width: 48%; margin-right: 2%; vertical-align: top;">
-                        <h2 style="margin-top: 0;">热门分类 TOP 10</h2>
-                        <table class="wp-list-table widefat fixed striped">
-                            <thead>
-                                <tr>
-                                    <th>分类名称</th>
-                                    <th style="text-align: right;">游戏数量</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php if (!empty($categories)): ?>
-                                    <?php foreach ($categories as $category): ?>
-                                        <tr>
-                                            <td>
-                                                <a href="<?php echo get_term_link($category); ?>" target="_blank">
-                                                    <?php echo esc_html($category->name); ?>
-                                                </a>
-                                            </td>
-                                            <td style="text-align: right;"><?php echo number_format($category->count); ?></td>
-                                        </tr>
-                                    <?php endforeach; ?>
-                                <?php else: ?>
-                                    <tr>
-                                        <td colspan="2">暂无分类数据</td>
-                                    </tr>
-                                <?php endif; ?>
-                            </tbody>
-                        </table>
+                <div class="yyk-stats-grid">
+                    <div class="yyk-stat-card yyk-card-blue">
+                        <div class="yyk-stat-card-inner">
+                            <div class="yyk-stat-icon dashicons dashicons-archive"></div>
+                            <div class="yyk-stat-value"><?php echo number_format($total_apps); ?></div>
+                            <div class="yyk-stat-label">已发布游戏</div>
+                            <div class="yyk-stat-desc">WordPress文章总数</div>
+                        </div>
                     </div>
                     
-                    <div style="background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); display: inline-block; width: 48%; vertical-align: top;">
-                        <h2 style="margin-top: 0;">最新发布游戏</h2>
-                        <table class="wp-list-table widefat fixed striped">
-                            <thead>
-                                <tr>
-                                    <th>游戏名称</th>
-                                    <th style="text-align: right;">发布时间</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                <?php if (!empty($recent_apps)): ?>
-                                    <?php foreach ($recent_apps as $app): ?>
-                                        <tr>
-                                            <td>
-                                                <a href="<?php echo get_permalink($app->ID); ?>" target="_blank">
-                                                    <?php echo esc_html($app->post_title); ?>
-                                                </a>
-                                            </td>
-                                            <td style="text-align: right;"><?php echo get_the_date('Y-m-d H:i', $app->ID); ?></td>
-                                        </tr>
-                                    <?php endforeach; ?>
-                                <?php else: ?>
-                                    <tr>
-                                        <td colspan="2">暂无游戏数据</td>
-                                    </tr>
-                                <?php endif; ?>
-                            </tbody>
-                        </table>
+                    <div class="yyk-stat-card yyk-card-green">
+                        <div class="yyk-stat-card-inner">
+                            <div class="yyk-stat-icon dashicons dashicons-category"></div>
+                            <div class="yyk-stat-value"><?php echo number_format($total_categories); ?></div>
+                            <div class="yyk-stat-label">游戏分类</div>
+                            <div class="yyk-stat-desc">分类总数</div>
+                        </div>
+                    </div>
+                    
+                    <div class="yyk-stat-card yyk-card-orange">
+                        <div class="yyk-stat-card-inner">
+                            <div class="yyk-stat-icon dashicons dashicons-download"></div>
+                            <div class="yyk-stat-value"><?php echo number_format($st_total); ?></div>
+                            <div class="yyk-stat-label">ST采集总数</div>
+                            <div class="yyk-stat-desc">已采集游戏</div>
+                        </div>
+                    </div>
+                    
+                    <div class="yyk-stat-card yyk-card-purple">
+                        <div class="yyk-stat-card-inner">
+                            <div class="yyk-stat-icon dashicons dashicons-clock"></div>
+                            <div class="yyk-stat-value"><?php echo number_format($st_unpublished); ?></div>
+                            <div class="yyk-stat-label">未发布游戏</div>
+                            <div class="yyk-stat-desc">待发布数量</div>
+                        </div>
                     </div>
                 </div>
                 
-                <div style="margin-top: 30px;">
-                    <h2>快捷操作</h2>
-                    <div style="background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                        <a href="<?php echo admin_url('edit.php?post_type=yyk_app_download'); ?>" class="button button-primary" style="margin-right: 10px;">管理游戏</a>
-                        <a href="<?php echo admin_url('edit-tags.php?taxonomy=yyk_app_category&post_type=yyk_app_download'); ?>" class="button" style="margin-right: 10px;">管理分类</a>
-                        <a href="<?php echo admin_url('edit.php?post_type=yyk_app_download&page=yyk-st-collector'); ?>" class="button" style="margin-right: 10px;">ST游戏采集</a>
-                        <a href="<?php echo admin_url('edit.php?post_type=yyk_app_download&page=yyk-app-diagnostic'); ?>" class="button">诊断工具</a>
+                <div class="yyk-content-grid">
+                    <div class="yyk-content-card">
+                        <div class="yyk-card-header">
+                            <h2>热门分类 TOP 10</h2>
+                        </div>
+                        <div class="yyk-card-body">
+                            <div class="yyk-table-wrapper">
+                                <table class="yyk-data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>分类名称</th>
+                                            <th class="yyk-text-right">游戏数量</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php if (!empty($categories)): ?>
+                                            <?php foreach ($categories as $category): ?>
+                                                <tr>
+                                                    <td>
+                                                        <a href="<?php echo get_term_link($category); ?>" target="_blank">
+                                                            <?php echo esc_html($category->name); ?>
+                                                        </a>
+                                                    </td>
+                                                    <td class="yyk-text-right"><?php echo number_format($category->count); ?></td>
+                                                </tr>
+                                            <?php endforeach; ?>
+                                        <?php else: ?>
+                                            <tr>
+                                                <td colspan="2">
+                                                    <div class="yyk-empty-state">
+                                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                            <rect x="3" y="3" width="18" height="18" rx="2"></rect>
+                                                            <line x1="3" y1="9" x2="21" y2="9"></line>
+                                                            <line x1="9" y1="21" x2="9" y2="9"></line>
+                                                        </svg>
+                                                        <p>暂无分类数据</p>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        <?php endif; ?>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="yyk-content-card">
+                        <div class="yyk-card-header">
+                            <h2>最新发布游戏</h2>
+                        </div>
+                        <div class="yyk-card-body">
+                            <div class="yyk-table-wrapper">
+                                <table class="yyk-data-table">
+                                    <thead>
+                                        <tr>
+                                            <th>游戏名称</th>
+                                            <th class="yyk-text-right">发布时间</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <?php if (!empty($recent_apps)): ?>
+                                            <?php foreach ($recent_apps as $app): ?>
+                                                <tr>
+                                                    <td>
+                                                        <a href="<?php echo get_permalink($app->ID); ?>" target="_blank">
+                                                            <?php echo esc_html($app->post_title); ?>
+                                                        </a>
+                                                    </td>
+                                                    <td class="yyk-text-right"><?php echo get_the_date('Y-m-d H:i', $app->ID); ?></td>
+                                                </tr>
+                                            <?php endforeach; ?>
+                                        <?php else: ?>
+                                            <tr>
+                                                <td colspan="2">
+                                                    <div class="yyk-empty-state">
+                                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+                                                            <polyline points="14 2 14 8 20 8"></polyline>
+                                                        </svg>
+                                                        <p>暂无游戏数据</p>
+                                                    </div>
+                                                </td>
+                                            </tr>
+                                        <?php endif; ?>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="yyk-actions-section">
+                    <div class="yyk-actions-card">
+                        <h2>快捷操作</h2>
+                        <div class="yyk-actions-buttons">
+                            <a href="<?php echo admin_url('edit.php?post_type=yyk_app_download'); ?>" class="yyk-action-btn yyk-action-btn-primary">
+                                <span class="dashicons dashicons-edit"></span>
+                                管理游戏
+                            </a>
+                            <a href="<?php echo admin_url('edit-tags.php?taxonomy=yyk_app_category&post_type=yyk_app_download'); ?>" class="yyk-action-btn yyk-action-btn-secondary">
+                                <span class="dashicons dashicons-category"></span>
+                                管理分类
+                            </a>
+                            <a href="<?php echo admin_url('edit.php?post_type=yyk_app_download&page=yyk-st-collector'); ?>" class="yyk-action-btn yyk-action-btn-success">
+                                <span class="dashicons dashicons-download"></span>
+                                游戏采集
+                            </a>
+                            <a href="<?php echo admin_url('edit.php?post_type=yyk_app_download&page=yyk-app-diagnostic'); ?>" class="yyk-action-btn yyk-action-btn-warning">
+                                <span class="dashicons dashicons-admin-tools"></span>
+                                诊断工具
+                            </a>
+                        </div>
                     </div>
                 </div>
             </div>
+            </div>
             <?php
+        }
+        
+        public function render_tutorial() {
+            $tutorial_file = YYK_APP_PLUGIN_DIR . 'admin/templates/tutorial.php';
+            if (file_exists($tutorial_file)) {
+                include $tutorial_file;
+            } else {
+                echo '<div class="notice notice-error"><p>教程文件不存在</p></div>';
+            }
         }
         
         public function handle_download_record() {

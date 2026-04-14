@@ -1,7 +1,15 @@
 <?php
-/**
- * ST手游接口采集管理器
- */
+/*============================================================
+ =  🚀 项目名称：壹元库应用下载插件
+ =  📦 模块名称：ST采集模块
+ =  📄 文件：class-st-collector.php
+ =  👤 作者：壹元库 <815116566@qq.com>
+ =  🌐 官网：https://yiyuanku.cn
+ =  🔢 版本：1.0.0
+ =  📅 日期：2026-04-15
+ =  📝 说明：ST手游接口采集管理器，负责从SteamSy接口采集游戏数据并管理
+ =  © 版权：2026 壹元库. All Rights Reserved.
+ ============================================================*/
 
 if (!defined('ABSPATH')) {
     exit;
@@ -1706,8 +1714,8 @@ if (!class_exists('YYK_ST_Collector')) {
         public function add_admin_menu() {
             add_submenu_page(
                 'edit.php?post_type=yyk_app_download',
-                'ST游戏采集',
-                'ST游戏采集',
+                '游戏采集',
+                '游戏采集',
                 'manage_options',
                 'yyk-st-collector',
                 [$this, 'render_admin_page']
@@ -1719,7 +1727,6 @@ if (!class_exists('YYK_ST_Collector')) {
                 check_admin_referer('yyk_st_settings');
                 update_option('yyk_st_api_source', sanitize_text_field($_POST['api_source']));
                 update_option('yyk_st_cps_id', sanitize_text_field($_POST['cps_id']));
-                echo '<div class="notice notice-success"><p>设置已保存</p></div>';
             }
             
             $api_source = get_option('yyk_st_api_source', 'steamsy');
@@ -1728,172 +1735,960 @@ if (!class_exists('YYK_ST_Collector')) {
             $table_name = YYK_ST_TABLE_GAMES;
             $table_exists = $this->db->get_var("SHOW TABLES LIKE '$table_name'");
             $game_count = $table_exists ? $this->db->get_var("SELECT COUNT(*) FROM $table_name") : 0;
+            $published_count = $table_exists ? $this->db->get_var("SELECT COUNT(*) FROM $table_name WHERE post_id IS NOT NULL AND post_id > 0") : 0;
+            $unpublished_count = $game_count - $published_count;
             
             ?>
-            <div class="wrap">
-                <h1>ST游戏采集</h1>
+            <div class="wrap yyk-st-collector-page">
+                <h1 class="yyk-page-title">
+                    <span class="dashicons dashicons-download"></span>
+                    游戏采集
+                </h1>
                 
-                <div class="notice notice-info" style="margin: 20px 0;">
-                    <strong>数据库状态:</strong> 
-                    表名: <?php echo esc_html($table_name); ?> | 
-                    表状态: <?php echo $table_exists ? '✅ 存在' : '❌ 不存在'; ?> | 
-                    游戏数量: <?php echo intval($game_count); ?>
-                    <button type="button" class="button button-secondary" id="fix_database" style="margin-left: 20px;">🔧 修复数据库</button>
-                </div>
-                
-                <div class="nav-tab-wrapper">
-                    <a href="#settings" class="nav-tab nav-tab-active">⚙️ 设置</a>
-                    <a href="#collect" class="nav-tab">📥 采集</a>
-                    <a href="#publish" class="nav-tab">📦 发布管理</a>
-                </div>
-                
-                <div id="settings" class="tab-content" style="display:block">
-                    <form method="post" style="background:#fff;padding:20px;margin-top:20px;border-radius:8px">
-                        <?php wp_nonce_field('yyk_st_settings'); ?>
-                        <table class="form-table">
-                            <tr><th><label>数据源</label></th>
-                                <td>
-                                    <select name="api_source" class="regular-text">
-                                        <option value="steamsy" <?php selected($api_source, 'steamsy'); ?>>ST手游 (www.steamsy.com)</option>
-                                        <option value="hehesy" <?php selected($api_source, 'hehesy'); ?>>梨子手游 (box.hehesy.com)</option>
-                                    </select><br>
-                                    <span class="description">选择数据源</span>
-                                </th>
-                            </tr>
-                            <tr><th><label>渠道ID</label></th>
-                                <td><input type="text" name="cps_id" value="<?php echo esc_attr($cps_id); ?>" class="regular-text"><br>
-                                <span class="description">您的渠道账号</span></th>
-                            </tr>
-                        </table>
-                        <p class="submit"><button type="submit" name="save_settings" class="button button-primary">保存设置</button></p>
-                    </form>
-                </div>
-                
-                <div id="collect" class="tab-content" style="display:none">
-                    <div style="background:#fff;padding:20px;margin-top:20px;border-radius:8px">
-                        <h3>采集接口</h3>
-                        <div class="yyk-collect-buttons">
-                            <div class="collect-group">
-                                <h4>📁 分类管理</h4>
-                                <button type="button" class="button" id="collect_categories">同步分类 (v2)</button>
-                            </div>
-                            <div class="collect-group">
-                                <h4>🎮 游戏采集</h4>
-                                <button type="button" class="button button-primary" id="collect_games">采集游戏列表 (v1)</button>
-                            </div>
-                            <div class="collect-group">
-                                <h4>📋 游戏详情</h4>
-                                <button type="button" class="button" id="collect_details">采集游戏详情 (v3)</button>
-                            </div>
-                            <div class="collect-group">
-                                <h4>📅 预约游戏</h4>
-                                <button type="button" class="button" id="collect_reserve">采集预约游戏 (v4)</button>
-                            </div>
-                            <div class="collect-group">
-                                <h4>🏆 排行榜</h4>
-                                <button type="button" class="button" id="collect_ranking">采集排行榜 (v5)</button>
-                            </div>
-                            <div class="collect-group">
-                                <h4>🎁 游戏礼包</h4>
-                                <button type="button" class="button" id="collect_gifts">采集游戏礼包 (v6)</button>
-                            </div>
-                            <div class="collect-group">
-                                <h4>🚀 批量操作</h4>
-                                <button type="button" class="button button-secondary" id="collect_all">一键采集全部</button>
-                            </div>
+                <!-- 统计卡片 -->
+                <div class="yyk-st-cards">
+                    <div class="yyk-st-card">
+                        <div class="yyk-st-card-icon" style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);">
+                            <span class="dashicons dashicons-games"></span>
                         </div>
-                        <div id="collect_status" style="margin-top:20px;padding:15px;background:#f5f5f5;border-radius:4px;display:none"></div>
-                        <div id="collect_result" style="margin-top:15px"></div>
+                        <div class="yyk-st-card-info">
+                            <div class="yyk-st-card-value"><?php echo number_format($game_count); ?></div>
+                            <div class="yyk-st-card-label">已采集游戏</div>
+                        </div>
+                    </div>
+                    
+                    <div class="yyk-st-card">
+                        <div class="yyk-st-card-icon" style="background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);">
+                            <span class="dashicons dashicons-yes"></span>
+                        </div>
+                        <div class="yyk-st-card-info">
+                            <div class="yyk-st-card-value"><?php echo number_format($published_count); ?></div>
+                            <div class="yyk-st-card-label">已发布</div>
+                        </div>
+                    </div>
+                    
+                    <div class="yyk-st-card">
+                        <div class="yyk-st-card-icon" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);">
+                            <span class="dashicons dashicons-clock"></span>
+                        </div>
+                        <div class="yyk-st-card-info">
+                            <div class="yyk-st-card-value"><?php echo number_format($unpublished_count); ?></div>
+                            <div class="yyk-st-card-label">待发布</div>
+                        </div>
                     </div>
                 </div>
                 
-                <div id="publish" class="tab-content" style="display:none">
-                    <div style="background:#fff;padding:20px;margin-top:20px;border-radius:8px">
-                        <div class="yyk-publish-header">
-                            <h3>游戏管理</h3>
-                            <div class="yyk-batch-actions">
-                                <button type="button" class="button button-primary" id="publish_all">📤 发布所有未发布游戏</button>
-                                <button type="button" class="button button-danger" id="delete_all" style="background:#dc3545;color:white;border-color:#dc3545">🗑️ 删除所有游戏</button>
+                <!-- 数据库状态 -->
+                <div class="yyk-st-alert yyk-st-alert-info">
+                    <div class="yyk-st-alert-icon">ℹ️</div>
+                    <div class="yyk-st-alert-content">
+                        <strong>数据库状态:</strong> 
+                        表名: <code><?php echo esc_html($table_name); ?></code> | 
+                        表状态: <?php echo $table_exists ? '✅ 存在' : '❌ 不存在'; ?>
+                        <button type="button" class="yyk-st-btn yyk-st-btn-secondary" id="fix_database" style="margin-left: 15px;">
+                            <span class="dashicons dashicons-admin-tools"></span>
+                            修复数据库
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- 选项卡导航 -->
+                <div class="yyk-st-tabs">
+                    <div class="yyk-st-tab yyk-st-tab-active" data-tab="tutorial">
+                        <span class="dashicons dashicons-book"></span>
+                        采集教程
+                    </div>
+                    <div class="yyk-st-tab" data-tab="settings">
+                        <span class="dashicons dashicons-admin-settings"></span>
+                        设置
+                    </div>
+                    <div class="yyk-st-tab" data-tab="collect">
+                        <span class="dashicons dashicons-download"></span>
+                        采集
+                    </div>
+                    <div class="yyk-st-tab" data-tab="publish">
+                        <span class="dashicons dashicons-upload"></span>
+                        发布管理
+                    </div>
+                </div>
+                
+                <!-- 采集教程选项卡 -->
+                <div id="tutorial" class="yyk-st-tab-content yyk-st-tab-content-active">
+                    <div class="yyk-st-panel">
+                        <div class="yyk-st-panel-header">
+                            <h2>快速开始</h2>
+                        </div>
+                        <div class="yyk-st-panel-body">
+                            <div class="yyk-st-tutorial-steps">
+                                <div class="yyk-st-tutorial-step">
+                                    <div class="yyk-st-tutorial-step-number">1</div>
+                                    <div class="yyk-st-tutorial-step-content">
+                                        <h3>配置API</h3>
+                                        <p>前往<span class="yyk-st-highlight">设置</span>选项卡，选择数据源（ST手游或梨子手游），并填写您的渠道ID。</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="yyk-st-tutorial-step">
+                                    <div class="yyk-st-tutorial-step-number">2</div>
+                                    <div class="yyk-st-tutorial-step-content">
+                                        <h3>同步分类</h3>
+                                        <p>点击<span class="yyk-st-highlight">同步分类</span>按钮，将游戏分类从API同步到本地。</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="yyk-st-tutorial-step">
+                                    <div class="yyk-st-tutorial-step-number">3</div>
+                                    <div class="yyk-st-tutorial-step-content">
+                                        <h3>采集游戏</h3>
+                                        <p>点击<span class="yyk-st-highlight">采集游戏列表</span>开始采集游戏基本信息，或直接点击<span class="yyk-st-highlight">一键采集全部</span>完成所有操作。</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="yyk-st-tutorial-step">
+                                    <div class="yyk-st-tutorial-step-number">4</div>
+                                    <div class="yyk-st-tutorial-step-content">
+                                        <h3>发布游戏</h3>
+                                        <p>前往<span class="yyk-st-highlight">发布管理</span>选项卡，查看已采集的游戏，选择需要的游戏发布到您的网站。</p>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                        <div id="game_list_stats" style="margin:15px 0;padding:10px;background:#e8f4fc;border-radius:4px"></div>
-                        <div id="game_list"></div>
-                        <div id="game_pagination" class="yyk-pagination"></div>
+                    </div>
+                    
+                    <div class="yyk-st-panel">
+                        <div class="yyk-st-panel-header">
+                            <h2>采集功能详解</h2>
+                        </div>
+                        <div class="yyk-st-panel-body">
+                            <div class="yyk-st-tutorial-features">
+                                <div class="yyk-st-tutorial-feature">
+                                    <h3>📂 同步分类</h3>
+                                    <p>将API中的游戏分类同步到WordPress分类系统，确保游戏分类匹配。</p>
+                                </div>
+                                
+                                <div class="yyk-st-tutorial-feature">
+                                    <h3>🎮 采集游戏列表</h3>
+                                    <p>采集游戏的基本信息，包括游戏名称、图标、大小、分类、下载地址等。</p>
+                                </div>
+                                
+                                <div class="yyk-st-tutorial-feature">
+                                    <h3>📋 采集游戏详情</h3>
+                                    <p>采集游戏的详细信息，包括游戏介绍、截图、标签、礼包信息等。</p>
+                                </div>
+                                
+                                <div class="yyk-st-tutorial-feature">
+                                    <h3>📅 采集预约游戏</h3>
+                                    <p>采集即将发布的预约游戏信息。</p>
+                                </div>
+                                
+                                <div class="yyk-st-tutorial-feature">
+                                    <h3>🏆 采集排行榜</h3>
+                                    <p>采集热门游戏排行榜数据。</p>
+                                </div>
+                                
+                                <div class="yyk-st-tutorial-feature">
+                                    <h3>🎁 采集游戏礼包</h3>
+                                    <p>采集游戏的礼包码和兑换信息。</p>
+                                </div>
+                                
+                                <div class="yyk-st-tutorial-feature">
+                                    <h3>🚀 一键采集全部</h3>
+                                    <p>自动完成所有采集操作：同步分类→采集游戏列表→采集游戏详情→采集礼包，一步到位！</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="yyk-st-panel">
+                        <div class="yyk-st-panel-header">
+                            <h2>常见问题</h2>
+                        </div>
+                        <div class="yyk-st-panel-body">
+                            <div class="yyk-st-tutorial-faq">
+                                <div class="yyk-st-tutorial-faq-item">
+                                    <h3>Q: 采集失败怎么办？</h3>
+                                    <p>A: 检查网络连接，确认API源地址可访问。如持续失败，尝试切换数据源或稍后重试。</p>
+                                </div>
+                                
+                                <div class="yyk-st-tutorial-faq-item">
+                                    <h3>Q: 如何避免重复采集？</h3>
+                                    <p>A: 系统会自动检测已存在的游戏，不会重复采集已有的游戏数据。</p>
+                                </div>
+                                
+                                <div class="yyk-st-tutorial-faq-item">
+                                    <h3>Q: 采集后如何发布游戏？</h3>
+                                    <p>A: 前往"发布管理"选项卡，选中需要发布的游戏，点击发布按钮即可将游戏发布到WordPress。</p>
+                                </div>
+                                
+                                <div class="yyk-st-tutorial-faq-item">
+                                    <h3>Q: 可以只采集部分游戏吗？</h3>
+                                    <p>A: 可以！先采集游戏列表，然后在"发布管理"中选择您需要的游戏进行发布。</p>
+                                </div>
+                                
+                                <div class="yyk-st-tutorial-faq-item">
+                                    <h3>Q: 数据库表不存在怎么办？</h3>
+                                    <p>A: 点击页面顶部的"修复数据库"按钮，系统会自动创建所需的数据表。</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 设置选项卡 -->
+                <div id="settings" class="yyk-st-tab-content">
+                    <div class="yyk-st-panel">
+                        <div class="yyk-st-panel-header">
+                            <h2>API配置</h2>
+                        </div>
+                        <div class="yyk-st-panel-body">
+                            <form id="st-settings-form" method="post">
+                                <?php wp_nonce_field('yyk_st_settings'); ?>
+                                <div class="yyk-st-form-row">
+                                    <div class="yyk-st-form-group">
+                                        <label>数据源</label>
+                                        <select name="api_source" class="yyk-st-input">
+                                            <option value="steamsy" <?php selected($api_source, 'steamsy'); ?>>ST手游 (www.steamsy.com)</option>
+                                            <option value="hehesy" <?php selected($api_source, 'hehesy'); ?>>梨子手游 (box.hehesy.com)</option>
+                                        </select>
+                                        <p class="yyk-st-help">选择要采集的数据源</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="yyk-st-form-row">
+                                    <div class="yyk-st-form-group">
+                                        <label>渠道ID</label>
+                                        <input type="text" name="cps_id" value="<?php echo esc_attr($cps_id); ?>" class="yyk-st-input">
+                                        <p class="yyk-st-help">您的渠道账号，用于统计分成</p>
+                                    </div>
+                                </div>
+                                
+                                <div class="yyk-st-form-actions">
+                                    <button type="submit" name="save_settings" class="yyk-st-btn yyk-st-btn-primary">
+                                        <span class="dashicons dashicons-saved"></span>
+                                        保存设置
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 采集选项卡 -->
+                <div id="collect" class="yyk-st-tab-content">
+                    <div class="yyk-st-panel">
+                        <div class="yyk-st-panel-header">
+                            <h2>快速采集</h2>
+                        </div>
+                        <div class="yyk-st-panel-body">
+                            <div class="yyk-st-collect-buttons">
+                                <button type="button" class="yyk-st-btn yyk-st-btn-info" id="collect_categories">
+                                    <span class="dashicons dashicons-category"></span>
+                                    同步分类 (v2)
+                                </button>
+                                <button type="button" class="yyk-st-btn yyk-st-btn-success" id="collect_games">
+                                    <span class="dashicons dashicons-games"></span>
+                                    采集游戏列表 (v1)
+                                </button>
+                                <button type="button" class="yyk-st-btn yyk-st-btn-warning" id="collect_details">
+                                    <span class="dashicons dashicons-list-view"></span>
+                                    采集游戏详情 (v3)
+                                </button>
+                                <button type="button" class="yyk-st-btn yyk-st-btn-secondary" id="collect_reserve">
+                                    <span class="dashicons dashicons-calendar"></span>
+                                    采集预约游戏 (v4)
+                                </button>
+                                <button type="button" class="yyk-st-btn yyk-st-btn-secondary" id="collect_ranking">
+                                    <span class="dashicons dashicons-chart-bar"></span>
+                                    采集排行榜 (v5)
+                                </button>
+                                <button type="button" class="yyk-st-btn yyk-st-btn-secondary" id="collect_gifts">
+                                    <span class="dashicons dashicons-star-filled"></span>
+                                    采集游戏礼包 (v6)
+                                </button>
+                                <button type="button" class="yyk-st-btn yyk-st-btn-primary" id="collect_all">
+                                    <span class="dashicons dashicons-update"></span>
+                                    一键采集全部
+                                </button>
+                            </div>
+                            
+                            <div id="collect_status" class="yyk-st-alert yyk-st-alert-info" style="display: none;"></div>
+                            <div id="collect_result" style="margin-top: 15px;"></div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 发布管理选项卡 -->
+                <div id="publish" class="yyk-st-tab-content">
+                    <div class="yyk-st-panel">
+                        <div class="yyk-st-panel-header">
+                            <h2>游戏管理</h2>
+                            <div class="yyk-st-header-actions">
+                                <button type="button" class="yyk-st-btn yyk-st-btn-primary" id="publish_all">
+                                    <span class="dashicons dashicons-upload"></span>
+                                    发布所有未发布游戏
+                                </button>
+                                <button type="button" class="yyk-st-btn yyk-st-btn-danger" id="delete_all">
+                                    <span class="dashicons dashicons-trash"></span>
+                                    删除所有游戏
+                                </button>
+                            </div>
+                        </div>
+                        <div class="yyk-st-panel-body">
+                            <div id="game_list_stats" class="yyk-st-alert yyk-st-alert-info" style="margin-bottom: 20px;"></div>
+                            <div id="game_list"></div>
+                            <div id="game_pagination" class="yyk-st-pagination"></div>
+                        </div>
                     </div>
                 </div>
             </div>
             
             <style>
-            .yyk-collect-buttons { display: flex; flex-wrap: wrap; gap: 30px; margin: 20px 0; }
-            .collect-group { background: #f8f9fa; padding: 15px; border-radius: 8px; min-width: 200px; }
-            .collect-group h4 { margin: 0 0 10px 0; color: #0073aa; }
-            .collect-group button { margin: 5px 5px 5px 0; }
-            .yyk-publish-header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; margin-bottom: 20px; }
-            .yyk-batch-actions { display: flex; gap: 10px; }
-            .button-danger:hover { background: #c82333 !important; }
-            .yyk-game-status { padding: 2px 8px; border-radius: 10px; font-size: 11px; font-weight: 500; }
-            .yyk-game-status.published { background: #d4edda; color: #155724; }
-            .yyk-game-status.unpublished { background: #fff3cd; color: #856404; }
-            .yyk-pagination { display: flex; justify-content: center; gap: 8px; margin-top: 20px; }
-            .yyk-pagination a { display: inline-block; padding: 6px 12px; background: #f0f0f0; border-radius: 4px; text-decoration: none; color: #333; cursor: pointer; }
-            .yyk-pagination a.active { background: #0073aa; color: #fff; }
-            .collect-result-item { padding: 8px 12px; margin: 5px 0; border-radius: 4px; }
-            .collect-result-item.success { background: #d4edda; color: #155724; border-left: 4px solid #28a745; }
-            .collect-result-item.error { background: #f8d7da; color: #721c24; border-left: 4px solid #dc3545; }
+            .yyk-st-collector-page {
+                max-width: 1200px;
+            }
+            
+            .yyk-page-title {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                font-size: 24px;
+                font-weight: 600;
+                color: #1d2327;
+                margin-bottom: 25px;
+            }
+            
+            .yyk-page-title .dashicons {
+                font-size: 28px;
+                width: 28px;
+                height: 28px;
+                color: #667eea;
+            }
+            
+            /* 统计卡片 */
+            .yyk-st-cards {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+                gap: 20px;
+                margin-bottom: 25px;
+            }
+            
+            .yyk-st-card {
+                background: white;
+                border-radius: 16px;
+                padding: 24px;
+                display: flex;
+                align-items: center;
+                gap: 20px;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.06);
+                border: 1px solid #e8e8e8;
+                transition: all 0.3s ease;
+            }
+            
+            .yyk-st-card:hover {
+                transform: translateY(-3px);
+                box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
+            }
+            
+            .yyk-st-card-icon {
+                width: 64px;
+                height: 64px;
+                border-radius: 14px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                flex-shrink: 0;
+            }
+            
+            .yyk-st-card-icon .dashicons {
+                font-size: 32px;
+                width: 32px;
+                height: 32px;
+                color: white;
+            }
+            
+            .yyk-st-card-info {
+                flex: 1;
+            }
+            
+            .yyk-st-card-value {
+                font-size: 28px;
+                font-weight: 700;
+                color: #1d2327;
+                line-height: 1.2;
+                margin-bottom: 4px;
+            }
+            
+            .yyk-st-card-label {
+                font-size: 14px;
+                color: #64748b;
+                font-weight: 500;
+            }
+            
+            /* 警告框 */
+            .yyk-st-alert {
+                display: flex;
+                align-items: center;
+                gap: 12px;
+                padding: 16px 20px;
+                border-radius: 12px;
+                margin-bottom: 20px;
+                font-size: 14px;
+            }
+            
+            .yyk-st-alert-info {
+                background: #d1ecf1;
+                color: #0c5460;
+                border: 1px solid #bee5eb;
+            }
+            
+            .yyk-st-alert-icon {
+                font-size: 20px;
+                flex-shrink: 0;
+            }
+            
+            .yyk-st-alert-content {
+                flex: 1;
+            }
+            
+            .yyk-st-alert code {
+                background: rgba(0,0,0,0.1);
+                padding: 2px 8px;
+                border-radius: 4px;
+                font-family: monospace;
+            }
+            
+            /* 选项卡 */
+            .yyk-st-tabs {
+                display: flex;
+                gap: 8px;
+                margin-bottom: 20px;
+                background: white;
+                padding: 8px;
+                border-radius: 12px;
+                border: 1px solid #e8e8e8;
+            }
+            
+            .yyk-st-tab {
+                flex: 1;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                gap: 8px;
+                padding: 14px 20px;
+                border-radius: 8px;
+                cursor: pointer;
+                font-size: 14px;
+                font-weight: 500;
+                color: #64748b;
+                transition: all 0.3s ease;
+            }
+            
+            .yyk-st-tab:hover {
+                background: #f8f9fa;
+                color: #475569;
+            }
+            
+            .yyk-st-tab.yyk-st-tab-active {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+            }
+            
+            .yyk-st-tab .dashicons {
+                font-size: 18px;
+                width: 18px;
+                height: 18px;
+            }
+            
+            /* 选项卡内容 */
+            .yyk-st-tab-content {
+                display: none;
+            }
+            
+            .yyk-st-tab-content.yyk-st-tab-content-active {
+                display: block;
+            }
+            
+            /* 面板 */
+            .yyk-st-panel {
+                background: white;
+                border-radius: 16px;
+                border: 1px solid #e8e8e8;
+                overflow: hidden;
+            }
+            
+            .yyk-st-panel-header {
+                display: flex;
+                align-items: center;
+                justify-content: space-between;
+                padding: 20px 24px;
+                border-bottom: 1px solid #f0f0f0;
+            }
+            
+            .yyk-st-panel-header h2 {
+                margin: 0;
+                font-size: 18px;
+                font-weight: 600;
+                color: #1d2327;
+            }
+            
+            .yyk-st-header-actions {
+                display: flex;
+                gap: 10px;
+            }
+            
+            .yyk-st-panel-body {
+                padding: 24px;
+            }
+            
+            /* 表单 */
+            .yyk-st-form-row {
+                margin-bottom: 24px;
+            }
+            
+            .yyk-st-form-group {
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+            }
+            
+            .yyk-st-form-group label {
+                font-size: 14px;
+                font-weight: 600;
+                color: #1d2327;
+            }
+            
+            .yyk-st-input {
+                width: 100%;
+                max-width: 500px;
+                padding: 12px 16px;
+                border: 2px solid #e8e8e8;
+                border-radius: 10px;
+                font-size: 14px;
+                transition: all 0.3s ease;
+            }
+            
+            .yyk-st-input:focus {
+                outline: none;
+                border-color: #667eea;
+                box-shadow: 0 0 0 4px rgba(102, 126, 234, 0.1);
+            }
+            
+            .yyk-st-help {
+                font-size: 13px;
+                color: #64748b;
+                margin: 0;
+            }
+            
+            .yyk-st-form-actions {
+                margin-top: 20px;
+            }
+            
+            /* 按钮 */
+            .yyk-st-btn {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                gap: 8px;
+                padding: 12px 20px;
+                border: none;
+                border-radius: 10px;
+                font-size: 14px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                text-decoration: none;
+            }
+            
+            .yyk-st-btn .dashicons {
+                font-size: 18px;
+                width: 18px;
+                height: 18px;
+            }
+            
+            .yyk-st-btn-primary {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+            }
+            
+            .yyk-st-btn-primary:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+            }
+            
+            .yyk-st-btn-success {
+                background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+                color: white;
+            }
+            
+            .yyk-st-btn-success:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 6px 20px rgba(17, 153, 142, 0.4);
+            }
+            
+            .yyk-st-btn-info {
+                background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+                color: white;
+            }
+            
+            .yyk-st-btn-info:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 6px 20px rgba(79, 172, 254, 0.4);
+            }
+            
+            .yyk-st-btn-warning {
+                background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+                color: white;
+            }
+            
+            .yyk-st-btn-warning:hover {
+                transform: translateY(-2px);
+                box-shadow: 0 6px 20px rgba(240, 147, 251, 0.4);
+            }
+            
+            .yyk-st-btn-secondary {
+                background: #f8f9fa;
+                color: #475569;
+                border: 2px solid #e8e8e8;
+            }
+            
+            .yyk-st-btn-secondary:hover {
+                background: #e8e8e8;
+            }
+            
+            .yyk-st-btn-danger {
+                background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+                color: white;
+            }
+            
+            .yyk-st-btn-danger:hover {
+                transform: translateY(-1px);
+                box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+            }
+            
+            .yyk-st-btn:disabled {
+                opacity: 0.6;
+                cursor: not-allowed;
+                transform: none !important;
+                box-shadow: none !important;
+            }
+            
+            /* 采集按钮网格 */
+            .yyk-st-collect-buttons {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                gap: 12px;
+            }
+            
+            /* 游戏状态 */
+            .yyk-game-status {
+                padding: 4px 10px;
+                border-radius: 12px;
+                font-size: 12px;
+                font-weight: 600;
+                display: inline-block;
+            }
+            
+            .yyk-game-status.published {
+                background: #d4edda;
+                color: #155724;
+            }
+            
+            .yyk-game-status.unpublished {
+                background: #fff3cd;
+                color: #856404;
+            }
+            
+            /* 分页 */
+            .yyk-st-pagination {
+                margin-top: 20px;
+            }
+            
+            .yyk-st-pagination-wrapper {
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                gap: 12px;
+            }
+            
+            .yyk-st-pagination-inner {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                flex-wrap: wrap;
+                justify-content: center;
+            }
+            
+            .yyk-st-pagination-btn {
+                display: inline-flex;
+                align-items: center;
+                justify-content: center;
+                gap: 6px;
+                min-width: 44px;
+                height: 44px;
+                padding: 0 16px;
+                background: #f8f9fa;
+                border: 2px solid #e8e8e8;
+                border-radius: 10px;
+                color: #475569;
+                font-size: 14px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                box-shadow: 0 2px 6px rgba(0, 0, 0, 0.04);
+            }
+            
+            .yyk-st-pagination-btn:hover:not(:disabled) {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                border-color: #667eea;
+                transform: translateY(-2px);
+                box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
+            }
+            
+            .yyk-st-pagination-btn.yyk-st-pagination-current {
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                border-color: #667eea;
+                box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+            }
+            
+            .yyk-st-pagination-btn.yyk-st-pagination-disabled {
+                opacity: 0.5;
+                cursor: not-allowed;
+                background: #f1f5f9;
+            }
+            
+            .yyk-st-pagination-btn .dashicons {
+                font-size: 18px;
+                width: 18px;
+                height: 18px;
+            }
+            
+            .yyk-st-pagination-pages {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+            }
+            
+            .yyk-st-pagination-dots {
+                padding: 0 8px;
+                color: #94a3b8;
+                font-weight: 600;
+                font-size: 18px;
+            }
+            
+            .yyk-st-pagination-info {
+                color: #64748b;
+                font-size: 14px;
+                font-weight: 500;
+            }
+            
+            /* 教程样式 */
+            .yyk-st-tutorial-steps {
+                display: flex;
+                flex-direction: column;
+                gap: 20px;
+            }
+            
+            .yyk-st-tutorial-step {
+                display: flex;
+                gap: 20px;
+                padding: 20px;
+                background: #f8f9fa;
+                border-radius: 12px;
+                border-left: 4px solid #667eea;
+                transition: all 0.3s ease;
+            }
+            
+            .yyk-st-tutorial-step:hover {
+                transform: translateX(5px);
+                box-shadow: 0 4px 12px rgba(102, 126, 234, 0.15);
+            }
+            
+            .yyk-st-tutorial-step-number {
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                min-width: 48px;
+                height: 48px;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                font-size: 20px;
+                font-weight: 700;
+                border-radius: 50%;
+                flex-shrink: 0;
+            }
+            
+            .yyk-st-tutorial-step-content h3 {
+                margin: 0 0 8px 0;
+                font-size: 18px;
+                font-weight: 600;
+                color: #1e293b;
+            }
+            
+            .yyk-st-tutorial-step-content p {
+                margin: 0;
+                color: #64748b;
+                font-size: 15px;
+                line-height: 1.6;
+            }
+            
+            .yyk-st-highlight {
+                display: inline-block;
+                padding: 2px 8px;
+                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                color: white;
+                border-radius: 4px;
+                font-weight: 600;
+                font-size: 14px;
+            }
+            
+            .yyk-st-tutorial-features {
+                display: grid;
+                grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+                gap: 20px;
+            }
+            
+            .yyk-st-tutorial-feature {
+                padding: 20px;
+                background: #f8f9fa;
+                border-radius: 12px;
+                border-top: 3px solid #667eea;
+                transition: all 0.3s ease;
+            }
+            
+            .yyk-st-tutorial-feature:hover {
+                transform: translateY(-5px);
+                box-shadow: 0 8px 20px rgba(102, 126, 234, 0.15);
+            }
+            
+            .yyk-st-tutorial-feature h3 {
+                margin: 0 0 10px 0;
+                font-size: 17px;
+                font-weight: 600;
+                color: #1e293b;
+            }
+            
+            .yyk-st-tutorial-feature p {
+                margin: 0;
+                color: #64748b;
+                font-size: 14px;
+                line-height: 1.6;
+            }
+            
+            .yyk-st-tutorial-faq {
+                display: flex;
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .yyk-st-tutorial-faq-item {
+                padding: 20px;
+                background: #f8f9fa;
+                border-radius: 12px;
+                border-left: 4px solid #11998e;
+                transition: all 0.3s ease;
+            }
+            
+            .yyk-st-tutorial-faq-item:hover {
+                box-shadow: 0 4px 12px rgba(17, 153, 142, 0.15);
+            }
+            
+            .yyk-st-tutorial-faq-item h3 {
+                margin: 0 0 10px 0;
+                font-size: 16px;
+                font-weight: 600;
+                color: #1e293b;
+            }
+            
+            .yyk-st-tutorial-faq-item p {
+                margin: 0;
+                color: #64748b;
+                font-size: 14px;
+                line-height: 1.6;
+            }
+            
+            /* 采集结果 */
+            .collect-result-item {
+                padding: 14px 18px;
+                margin: 10px 0;
+                border-radius: 10px;
+                border-left: 4px solid;
+            }
+            
+            .collect-result-item.success {
+                background: #d4edda;
+                color: #155724;
+                border-left-color: #28a745;
+            }
+            
+            .collect-result-item.error {
+                background: #f8d7da;
+                color: #721c24;
+                border-left-color: #dc3545;
+            }
             </style>
             
             <script>
             jQuery(document).ready(function($) {
-                $('.nav-tab').click(function(e) {
-                    e.preventDefault();
-                    $('.nav-tab').removeClass('nav-tab-active');
-                    $(this).addClass('nav-tab-active');
-                    $('.tab-content').hide();
-                    $($(this).attr('href')).show();
+                $('.yyk-st-tab').click(function(e) {
+                    var tabId = $(this).data('tab');
+                    $('.yyk-st-tab').removeClass('yyk-st-tab-active');
+                    $(this).addClass('yyk-st-tab-active');
+                    $('.yyk-st-tab-content').removeClass('yyk-st-tab-content-active');
+                    $('#' + tabId).addClass('yyk-st-tab-content-active');
                 });
                 
                 function showStatus(msg, isSuccess) {
-                    $('#collect_status').show().html('<span style="color:' + (isSuccess ? 'green' : 'red') + '">' + msg + '</span>');
+                    $('#collect_status').show().html(msg);
                     setTimeout(function() { $('#collect_status').fadeOut(); }, 5000);
                 }
                 
                 function showResult(data, type) {
-                    var html = '<div class="collect-result-item ' + (data.success ? 'success' : 'error') + '" style="padding:15px;margin-bottom:10px;border-radius:8px;border-left:4px solid ' + (data.success ? '#27ae60' : '#e74c3c') + ';background:' + (data.success ? '#d4edda' : '#f8d7da') + '">';
-                    html += '<div style="font-size:16px;font-weight:600;margin-bottom:8px;color:' + (data.success ? '#155724' : '#721c24') + '">' + type + '</div>';
+                    var html = '<div class="collect-result-item ' + (data.success ? 'success' : 'error') + '">';
+                    html += '<div style="font-size:16px;font-weight:600;margin-bottom:8px;">' + type + '</div>';
                     if (data.success) {
-                        if (data.saved !== undefined && data.saved > 0) html += '<div style="color:#155724;display:flex;align-items:center;gap:8px;margin:4px 0;"><span style="font-size:20px">✅</span> 成功保存: <strong>' + data.saved + '</strong> 个游戏</div>';
-                        if (data.skipped !== undefined && data.skipped > 0) html += '<div style="color:#856404;display:flex;align-items:center;gap:8px;margin:4px 0;"><span style="font-size:20px">⚠️</span> 跳过: <strong>' + data.skipped + '</strong> 个（已存在）</div>';
-                        if (data.failed !== undefined && data.failed > 0) html += '<div style="color:#721c24;display:flex;align-items:center;gap:8px;margin:4px 0;"><span style="font-size:20px">❌</span> 采集失败: <strong>' + data.failed + '</strong> 个</div>';
-                        if (data.total !== undefined) html += '<div style="color:#333;display:flex;align-items:center;gap:8px;margin:4px 0;"><span style="font-size:20px">📊</span> 本次处理: <strong>' + data.total + '</strong> 个</div>';
+                        if (data.saved !== undefined && data.saved > 0) html += '<div style="display:flex;align-items:center;gap:8px;margin:4px 0;"><span style="font-size:20px">✅</span> 成功保存: <strong>' + data.saved + '</strong> 个游戏</div>';
+                        if (data.skipped !== undefined && data.skipped > 0) html += '<div style="display:flex;align-items:center;gap:8px;margin:4px 0;"><span style="font-size:20px">⚠️</span> 跳过: <strong>' + data.skipped + '</strong> 个（已存在）</div>';
+                        if (data.failed !== undefined && data.failed > 0) html += '<div style="display:flex;align-items:center;gap:8px;margin:4px 0;"><span style="font-size:20px">❌</span> 采集失败: <strong>' + data.failed + '</strong> 个</div>';
+                        if (data.total !== undefined) html += '<div style="display:flex;align-items:center;gap:8px;margin:4px 0;"><span style="font-size:20px">📊</span> 本次处理: <strong>' + data.total + '</strong> 个</div>';
                     } else {
-                        html += '<div style="color:#721c24;display:flex;align-items:center;gap:8px;"><span style="font-size:20px">❌</span> ' + (data.message || data.error || '未知错误') + '</div>';
+                        html += '<div style="display:flex;align-items:center;gap:8px;"><span style="font-size:20px">❌</span> ' + (data.message || data.error || '未知错误') + '</div>';
                     }
                     html += '</div>';
                     $('#collect_result').prepend(html);
                 }
                 
+                // 保存按钮原始内容
+                var buttonHtmls = {};
+                $('.yyk-st-btn[id^="collect_"]').each(function() {
+                    buttonHtmls[$(this).attr('id')] = $(this).html();
+                });
+                
                 // 同步分类
                 $('#collect_categories').click(function() {
-                    $(this).prop('disabled', true).text('同步中...');
+                    var btnId = $(this).attr('id');
+                    $(this).prop('disabled', true).html('<span class="dashicons dashicons-update"></span> 同步中...');
                     $.post(ajaxurl, { action: 'yyk_st_collect', type: 'categories', nonce: '<?php echo wp_create_nonce("yyk_st_collect"); ?>' }, function(r) {
-                        $(this).prop('disabled', false).text('同步分类');
+                        $('#' + btnId).prop('disabled', false).html(buttonHtmls[btnId]);
                         if (r.success) {
                             showStatus('同步成功，新增 ' + (r.data.saved || 0) + ' 个分类', true);
                             showResult(r.data, '分类同步');
                         } else {
                             showStatus(r.data.message || '同步失败', false);
                         }
-                    }.bind(this));
+                    });
                 });
                 
                 // 采集游戏列表
                 var currentPage = 1;
                 $('#collect_games').click(function() {
-                    $(this).prop('disabled', true).text('采集中...');
+                    var btnId = $(this).attr('id');
+                    $(this).prop('disabled', true).html('<span class="dashicons dashicons-update"></span> 采集中...');
                     $('#collect_result').empty();
-                    $('#collect_status').show().html('<span style="color:blue">🎯 正在采集第 ' + currentPage + ' 页游戏...</span>');
+                    $('#collect_status').show().html('🎯 正在采集第 ' + currentPage + ' 页游戏...');
                     $.post(ajaxurl, { action: 'yyk_st_collect', type: 'games_all', page: currentPage, nonce: '<?php echo wp_create_nonce("yyk_st_collect"); ?>' }, function(r) {
-                        $(this).prop('disabled', false).text('采集游戏列表');
+                        $('#' + btnId).prop('disabled', false).html(buttonHtmls[btnId]);
                         if (r.success) {
                             var data = r.data;
                             var pageInfo = '第 ' + (data.now_page || data.page || 1) + ' 页';
@@ -1921,14 +2716,14 @@ if (!class_exists('YYK_ST_Collector')) {
                             }
                             
                             if (!isLastPage) {
-                                $('#collect_result').append('<div style="margin-top:10px;padding:15px;background:#fff3cd;border-radius:8px;border-left:4px solid #ffc107"><div style="font-size:16px;font-weight:600;color:#856404;margin-bottom:10px;">💡 当前页采集完成</div><div style="display:flex;gap:10px;flex-wrap:wrap"><button type="button" class="button button-primary" id="collect_next_page" style="background:#0073aa;border-color:#0073aa;color:white">📄 采集下一页</button><button type="button" class="button" id="refresh_list">🔄 刷新列表</button></div></div>');
+                                $('#collect_result').append('<div style="margin-top:10px;padding:15px;background:#fff3cd;border-radius:8px;border-left:4px solid #ffc107"><div style="font-size:16px;font-weight:600;color:#856404;margin-bottom:10px;">💡 当前页采集完成</div><div style="display:flex;gap:10px;flex-wrap:wrap"><button type="button" class="yyk-st-btn yyk-st-btn-primary" id="collect_next_page"><span class="dashicons dashicons-arrow-right-alt2"></span> 采集下一页</button><button type="button" class="yyk-st-btn yyk-st-btn-secondary" id="refresh_list"><span class="dashicons dashicons-update"></span> 刷新列表</button></div></div>');
                             } else {
-                                $('#collect_result').append('<div style="margin-top:10px;padding:15px;background:#d4edda;border-radius:8px;border-left:4px solid #27ae60"><div style="font-size:16px;font-weight:600;color:#155724;margin-bottom:10px;">🎉 所有页面采集完成！</div><button type="button" class="button button-primary" id="refresh_list" style="background:#27ae60;border-color:#27ae60;color:white">🔄 刷新游戏列表</button></div>');
+                                $('#collect_result').append('<div style="margin-top:10px;padding:15px;background:#d4edda;border-radius:8px;border-left:4px solid #27ae60"><div style="font-size:16px;font-weight:600;color:#155724;margin-bottom:10px;">🎉 所有页面采集完成！</div><button type="button" class="yyk-st-btn yyk-st-btn-success" id="refresh_list"><span class="dashicons dashicons-update"></span> 刷新游戏列表</button></div>');
                             }
                         } else {
                             showResult({success: false, message: r.data.message || '采集失败'}, '❌ 采集失败');
                         }
-                    }.bind(this));
+                    });
                 });
                 
                 // 采集下一页
@@ -1941,7 +2736,8 @@ if (!class_exists('YYK_ST_Collector')) {
                 $('#collect_details').click(function() {
                     if (!confirm('确定要采集所有游戏的详情吗？这可能需要较长时间。')) return;
                     
-                    $(this).prop('disabled', true).text('采集中...');
+                    var btnId = $(this).attr('id');
+                    $(this).prop('disabled', true).html('<span class="dashicons dashicons-update"></span> 采集中...');
                     $('#collect_result').empty();
                     
                     // 先获取所有游戏ID
@@ -1955,7 +2751,7 @@ if (!class_exists('YYK_ST_Collector')) {
                             
                             function processNext(index) {
                                 if (index >= gameIds.length) {
-                                    $('#collect_details').prop('disabled', false).text('采集游戏详情');
+                                    $('#collect_details').prop('disabled', false).html(buttonHtmls['collect_details']);
                                     showResult({
                                         success: true,
                                         saved: processed,
@@ -1967,7 +2763,7 @@ if (!class_exists('YYK_ST_Collector')) {
                                 }
                                 
                                 var currentGameName = gameNames[index] || '未知游戏';
-                                $('#collect_status').show().html('<span style="color:blue">📋 正在采集: ' + (index + 1) + '/' + gameIds.length + ' - ' + currentGameName + '</span>');
+                                $('#collect_status').show().html('📋 正在采集: ' + (index + 1) + '/' + gameIds.length + ' - ' + currentGameName);
                                 
                                 $.post(ajaxurl, { 
                                     action: 'yyk_st_collect', 
@@ -1975,11 +2771,11 @@ if (!class_exists('YYK_ST_Collector')) {
                                     game_id: gameIds[index], 
                                     nonce: '<?php echo wp_create_nonce("yyk_st_collect"); ?>' 
                                 }, function(r) {
-                                    var resultHtml = '<div class="collect-result-item ' + (r.success ? 'success' : 'error') + '" style="padding:10px;margin-bottom:5px;border-radius:6px;border-left:3px solid ' + (r.success ? '#27ae60' : '#e74c3c') + ';background:' + (r.success ? '#d4edda' : '#f8d7da') + '">';
+                                    var resultHtml = '<div class="collect-result-item ' + (r.success ? 'success' : 'error') + '">';
                                     resultHtml += '<span style="font-size:16px;margin-right:8px">' + (r.success ? '✅' : '❌') + '</span>';
                                     resultHtml += '<strong>' + currentGameName + '</strong>';
                                     if (!r.success && r.data && r.data.message) {
-                                        resultHtml += '<br><small style="color:#721c24">' + r.data.message + '</small>';
+                                        resultHtml += '<br><small>' + r.data.message + '</small>';
                                     }
                                     resultHtml += '</div>';
                                     $('#collect_result').prepend(resultHtml);
@@ -1996,7 +2792,7 @@ if (!class_exists('YYK_ST_Collector')) {
                             
                             processNext(0);
                         } else {
-                            $('#collect_details').prop('disabled', false).text('采集游戏详情');
+                            $('#collect_details').prop('disabled', false).html(buttonHtmls['collect_details']);
                             showResult({success: false, message: '没有游戏数据，请先采集游戏列表'}, '❌ 采集失败');
                         }
                     });
@@ -2004,41 +2800,44 @@ if (!class_exists('YYK_ST_Collector')) {
                 
                 // 采集预约游戏
                 $('#collect_reserve').click(function() {
-                    $(this).prop('disabled', true).text('采集中...');
+                    var btnId = $(this).attr('id');
+                    $(this).prop('disabled', true).html('<span class="dashicons dashicons-update"></span> 采集中...');
                     $('#collect_result').empty();
-                    $('#collect_status').show().html('<span style="color:blue">📅 正在采集预约游戏...</span>');
+                    $('#collect_status').show().html('📅 正在采集预约游戏...');
                     $.post(ajaxurl, { action: 'yyk_st_collect', type: 'reserve', page: 1, nonce: '<?php echo wp_create_nonce("yyk_st_collect"); ?>' }, function(r) {
-                        $(this).prop('disabled', false).text('采集预约游戏');
+                        $('#' + btnId).prop('disabled', false).html(buttonHtmls[btnId]);
                         if (r.success) {
                             showResult(r.data, '📅 预约游戏采集');
                             loadGameList();
                         } else {
                             showResult({success: false, message: r.data.message || '采集失败'}, '❌ 采集失败');
                         }
-                    }.bind(this));
+                    });
                 });
                 
                 // 采集排行榜
                 $('#collect_ranking').click(function() {
-                    $(this).prop('disabled', true).text('采集中...');
+                    var btnId = $(this).attr('id');
+                    $(this).prop('disabled', true).html('<span class="dashicons dashicons-update"></span> 采集中...');
                     $('#collect_result').empty();
-                    $('#collect_status').show().html('<span style="color:blue">🏆 正在采集排行榜...</span>');
+                    $('#collect_status').show().html('🏆 正在采集排行榜...');
                     $.post(ajaxurl, { action: 'yyk_st_collect', type: 'ranking', nonce: '<?php echo wp_create_nonce("yyk_st_collect"); ?>' }, function(r) {
-                        $(this).prop('disabled', false).text('采集排行榜');
+                        $('#' + btnId).prop('disabled', false).html(buttonHtmls[btnId]);
                         if (r.success) {
                             showResult(r.data, '🏆 排行榜采集');
                             loadGameList();
                         } else {
                             showResult({success: false, message: r.data.message || '采集失败'}, '❌ 采集失败');
                         }
-                    }.bind(this));
+                    });
                 });
                 
                 // 采集游戏礼包
                 $('#collect_gifts').click(function() {
                     if (!confirm('确定要采集所有游戏的礼包吗？这可能需要较长时间。')) return;
                     
-                    $(this).prop('disabled', true).text('采集中...');
+                    var btnId = $(this).attr('id');
+                    $(this).prop('disabled', true).html('<span class="dashicons dashicons-update"></span> 采集中...');
                     $('#collect_result').empty();
                     
                     // 先获取所有游戏ID
@@ -2053,7 +2852,7 @@ if (!class_exists('YYK_ST_Collector')) {
                             
                             function processNext(index) {
                                 if (index >= gameIds.length) {
-                                    $('#collect_gifts').prop('disabled', false).text('采集游戏礼包');
+                                    $('#collect_gifts').prop('disabled', false).html(buttonHtmls['collect_gifts']);
                                     showResult({
                                         success: true,
                                         saved: totalGifts,
@@ -2064,7 +2863,7 @@ if (!class_exists('YYK_ST_Collector')) {
                                 }
                                 
                                 var currentGameName = gameNames[index] || '未知游戏';
-                                $('#collect_status').show().html('<span style="color:blue">🎁 正在采集礼包: ' + (index + 1) + '/' + gameIds.length + ' - ' + currentGameName + '</span>');
+                                $('#collect_status').show().html('🎁 正在采集礼包: ' + (index + 1) + '/' + gameIds.length + ' - ' + currentGameName);
                                 
                                 $.post(ajaxurl, { 
                                     action: 'yyk_st_collect', 
@@ -2073,7 +2872,7 @@ if (!class_exists('YYK_ST_Collector')) {
                                     nonce: '<?php echo wp_create_nonce("yyk_st_collect"); ?>' 
                                 }, function(r) {
                                     var giftCount = r.data ? (r.data.saved || 0) : 0;
-                                    var resultHtml = '<div class="collect-result-item ' + (r.success ? 'success' : 'error') + '" style="padding:10px;margin-bottom:5px;border-radius:6px;border-left:3px solid ' + (r.success ? '#27ae60' : '#e74c3c') + ';background:' + (r.success ? '#d4edda' : '#f8d7da') + '">';
+                                    var resultHtml = '<div class="collect-result-item ' + (r.success ? 'success' : 'error') + '">';
                                     resultHtml += '<span style="font-size:16px;margin-right:8px">' + (r.success ? '✅' : '❌') + '</span>';
                                     resultHtml += '<strong>' + currentGameName + '</strong>';
                                     if (r.success && giftCount > 0) {
@@ -2095,7 +2894,7 @@ if (!class_exists('YYK_ST_Collector')) {
                             
                             processNext(0);
                         } else {
-                            $('#collect_gifts').prop('disabled', false).text('采集游戏礼包');
+                            $('#collect_gifts').prop('disabled', false).html(buttonHtmls['collect_gifts']);
                             showResult({success: false, message: '没有游戏数据，请先采集游戏列表'}, '❌ 采集失败');
                         }
                     });
@@ -2103,11 +2902,12 @@ if (!class_exists('YYK_ST_Collector')) {
                 
                 // 一键采集
                 $('#collect_all').click(function() {
-                    $(this).prop('disabled', true).text('一键采集中...');
+                    var btnId = $(this).attr('id');
+                    $(this).prop('disabled', true).html('<span class="dashicons dashicons-update"></span> 一键采集中...');
                     $('#collect_result').empty();
-                    $('#collect_status').show().html('<span style="color:blue">🚀 正在一键采集...</span>');
+                    $('#collect_status').show().html('🚀 正在一键采集...');
                     $.post(ajaxurl, { action: 'yyk_st_collect', type: 'all', nonce: '<?php echo wp_create_nonce("yyk_st_collect"); ?>' }, function(r) {
-                        $(this).prop('disabled', false).text('一键采集全部');
+                        $('#' + btnId).prop('disabled', false).html(buttonHtmls[btnId]);
                         if (r.success) {
                             var data = r.data;
                             var totalSaved = 0;
@@ -2252,6 +3052,74 @@ if (!class_exists('YYK_ST_Collector')) {
                     
                     $('#game_list').html(html);
                     $('#game_list_stats').html('<strong>统计:</strong> 总计 ' + total + ' 个游戏，已发布 ' + publishedCount + ' 个，未发布 ' + unpublishedCount + ' 个');
+                    
+                    // 生成美化的翻页按钮
+                    var perPage = 20;
+                    var totalPages = Math.ceil(total / perPage);
+                    var paginationHtml = '';
+                    
+                    if (totalPages > 1) {
+                        paginationHtml += '<div class="yyk-st-pagination-wrapper">';
+                        paginationHtml += '<div class="yyk-st-pagination-inner">';
+                        
+                        // 上一页
+                        if (page > 1) {
+                            paginationHtml += '<button type="button" class="yyk-st-pagination-btn yyk-st-pagination-prev" data-page="' + (page - 1) + '">';
+                            paginationHtml += '<span class="dashicons dashicons-arrow-left-alt2"></span> 上一页';
+                            paginationHtml += '</button>';
+                        } else {
+                            paginationHtml += '<button type="button" class="yyk-st-pagination-btn yyk-st-pagination-disabled" disabled>';
+                            paginationHtml += '<span class="dashicons dashicons-arrow-left-alt2"></span> 上一页';
+                            paginationHtml += '</button>';
+                        }
+                        
+                        // 页码
+                        paginationHtml += '<div class="yyk-st-pagination-pages">';
+                        
+                        var startPage = Math.max(1, page - 2);
+                        var endPage = Math.min(totalPages, page + 2);
+                        
+                        if (startPage > 1) {
+                            paginationHtml += '<button type="button" class="yyk-st-pagination-btn yyk-st-pagination-page" data-page="1">1</button>';
+                            if (startPage > 2) {
+                                paginationHtml += '<span class="yyk-st-pagination-dots">...</span>';
+                            }
+                        }
+                        
+                        for (var i = startPage; i <= endPage; i++) {
+                            if (i === page) {
+                                paginationHtml += '<button type="button" class="yyk-st-pagination-btn yyk-st-pagination-page yyk-st-pagination-current" data-page="' + i + '" disabled>' + i + '</button>';
+                            } else {
+                                paginationHtml += '<button type="button" class="yyk-st-pagination-btn yyk-st-pagination-page" data-page="' + i + '">' + i + '</button>';
+                            }
+                        }
+                        
+                        if (endPage < totalPages) {
+                            if (endPage < totalPages - 1) {
+                                paginationHtml += '<span class="yyk-st-pagination-dots">...</span>';
+                            }
+                            paginationHtml += '<button type="button" class="yyk-st-pagination-btn yyk-st-pagination-page" data-page="' + totalPages + '">' + totalPages + '</button>';
+                        }
+                        
+                        paginationHtml += '</div>';
+                        
+                        // 下一页
+                        if (page < totalPages) {
+                            paginationHtml += '<button type="button" class="yyk-st-pagination-btn yyk-st-pagination-next" data-page="' + (page + 1) + '">';
+                            paginationHtml += '下一页 <span class="dashicons dashicons-arrow-right-alt2"></span>';
+                            paginationHtml += '</button>';
+                        } else {
+                            paginationHtml += '<button type="button" class="yyk-st-pagination-btn yyk-st-pagination-disabled" disabled>';
+                            paginationHtml += '下一页 <span class="dashicons dashicons-arrow-right-alt2"></span>';
+                            paginationHtml += '</button>';
+                        }
+                        
+                        paginationHtml += '</div>';
+                        paginationHtml += '<div class="yyk-st-pagination-info">共 ' + total + ' 个游戏，第 ' + page + ' / ' + totalPages + ' 页</div>';
+                        paginationHtml += '</div>';
+                    }
+                    
+                    $('#game_pagination').html(paginationHtml);
                 }
                 
                 function escapeHtml(str) {
@@ -2263,6 +3131,14 @@ if (!class_exists('YYK_ST_Collector')) {
                         return m;
                     });
                 }
+                
+                // 翻页按钮点击事件
+                $(document).on('click', '.yyk-st-pagination-btn:not(.yyk-st-pagination-disabled):not(.yyk-st-pagination-current)', function() {
+                    var page = $(this).data('page');
+                    if (page && page > 0) {
+                        loadGameList(page);
+                    }
+                });
                 
                 $(document).on('click', '.publish-single', function() {
                     var btn = $(this);

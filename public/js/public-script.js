@@ -1,3 +1,15 @@
+/*============================================================
+ =  🚀 项目名称：壹元库应用下载插件
+ =  📦 模块名称：前端脚本模块
+ =  📄 文件：public-script.js
+ =  👤 作者：壹元库 <815116566@qq.com>
+ =  🌐 官网：https://yiyuanku.cn
+ =  🔢 版本：1.0.0
+ =  📅 日期：2026-04-15
+ =  📝 说明：插件前端JavaScript文件，包含截图滚动、礼包码复制、下载记录等功能
+ =  © 版权：2026 壹元库. All Rights Reserved.
+ ============================================================*/
+
 // 五宣图滚动
 function scrollScreenshots(direction) {
     const list = document.getElementById('yyk-screenshot-list');
@@ -74,8 +86,8 @@ document.addEventListener('DOMContentLoaded', function() {
     'use strict';
     
     $(document).ready(function() {
-        // 轮播按钮功能
-        $('.yyk-layout-carousel').each(function() {
+        // 轮播按钮功能（支持普通轮播和紧凑轮播）
+        $('.yyk-layout-carousel, .yyk-layout-compact-carousel').each(function() {
             var $container = $(this);
             var $grid = $container.find('.yyk-widget-grid');
             var $prevBtn = $container.find('.yyk-carousel-btn-prev');
@@ -132,11 +144,11 @@ document.addEventListener('DOMContentLoaded', function() {
             
             // 获取滚动一个卡片的宽度
             function getScrollAmount() {
-                var $firstCard = $grid.find('.yyk-template-card, .yyk-gamebox').first();
+                var $firstCard = $grid.find('.yyk-template-card, .yyk-gamebox, .yyk-compact-card').first();
                 if ($firstCard.length) {
-                    return $firstCard.outerWidth() + 10; // 卡片宽度 + gap
+                    return $firstCard.outerWidth() + 15; // 卡片宽度 + gap
                 }
-                return 300; // 默认值
+                return 135; // 默认值（针对紧凑卡片）
             }
             
             // 上一页按钮

@@ -1,7 +1,15 @@
 <?php
-/**
- * 应用下载元字段管理类
- */
+/*============================================================
+ =  🚀 项目名称：壹元库应用下载插件
+ =  📦 模块名称：元字段管理模块
+ =  📄 文件：class-meta-boxes.php
+ =  👤 作者：壹元库 <815116566@qq.com>
+ =  🌐 官网：https://yiyuanku.cn
+ =  🔢 版本：1.0.0
+ =  📅 日期：2026-04-15
+ =  📝 说明：应用元字段管理类，负责添加、显示、保存应用的自定义字段
+ =  © 版权：2026 壹元库. All Rights Reserved.
+ ============================================================*/
 
 if (!defined('ABSPATH')) {
     exit;
@@ -246,79 +254,67 @@ if (!class_exists('YYK_App_Meta_Boxes')) {
             ?>
             
             <div class="yyk-st-extra-fields">
-                <div class="yyk-field">
+                <div class="yyk-field yyk-field-short">
                     <label for="yyk_st_short_intro"><?php _e('福利简介:', 'yyk-app-download'); ?></label>
                     <textarea id="yyk_st_short_intro" name="yyk_st_short_intro" 
                               class="widefat" rows="3"><?php echo esc_textarea($short_intro); ?></textarea>
                 </div>
                 
-                <div class="yyk-field">
+                <div class="yyk-field yyk-field-short">
                     <label for="yyk_st_discount"><?php _e('折扣:', 'yyk-app-download'); ?></label>
                     <input type="text" id="yyk_st_discount" name="yyk_st_discount" 
                            value="<?php echo esc_attr($discount); ?>" class="widefat">
                     <p class="description"><?php _e('例如: 0.1折', 'yyk-app-download'); ?></p>
                 </div>
                 
-                <div class="yyk-field">
+                <div class="yyk-field yyk-field-short">
                     <label for="yyk_st_welfare_tags"><?php _e('福利标签:', 'yyk-app-download'); ?></label>
                     <input type="text" id="yyk_st_welfare_tags" name="yyk_st_welfare_tags" 
                            value="<?php echo esc_attr(implode(',', $welfare_tags_array)); ?>" class="widefat">
                     <p class="description"><?php _e('多个标签用英文逗号分隔，例如: 满减福利,首充福利', 'yyk-app-download'); ?></p>
                 </div>
                 
-                <div class="yyk-field">
+                <div class="yyk-field yyk-field-wide">
                     <label for="yyk_st_fanli"><?php _e('返利介绍:', 'yyk-app-download'); ?></label>
-                    <?php
-                    wp_editor($fanli, 'yyk_st_fanli', [
-                        'media_buttons' => true,
-                        'textarea_rows' => 5,
-                        'teeny' => false,
-                        'textarea_name' => 'yyk_st_fanli',
-                    ]);
-                    ?>
+                    <textarea id="yyk_st_fanli" name="yyk_st_fanli" 
+                              class="widefat" rows="6"><?php echo esc_textarea($fanli); ?></textarea>
                 </div>
                 
-                <div class="yyk-field">
+                <div class="yyk-field yyk-field-wide">
                     <label for="yyk_st_vip_intro"><?php _e('VIP介绍:', 'yyk-app-download'); ?></label>
-                    <?php
-                    wp_editor($vip_intro, 'yyk_st_vip_intro', [
-                        'media_buttons' => true,
-                        'textarea_rows' => 5,
-                        'teeny' => false,
-                        'textarea_name' => 'yyk_st_vip_intro',
-                    ]);
-                    ?>
+                    <textarea id="yyk_st_vip_intro" name="yyk_st_vip_intro" 
+                              class="widefat" rows="8"><?php echo esc_textarea($vip_intro); ?></textarea>
                 </div>
                 
-                <div class="yyk-field">
+                <div class="yyk-field yyk-field-wide">
                     <label for="yyk_st_photos"><?php _e('五宣图/游戏截图:', 'yyk-app-download'); ?></label>
                     <textarea id="yyk_st_photos" name="yyk_st_photos" 
                               class="widefat" rows="4"><?php echo esc_textarea($photos); ?></textarea>
                     <p class="description"><?php _e('JSON格式的图片URL数组，例如: ["http://example.com/1.jpg","http://example.com/2.jpg"]', 'yyk-app-download'); ?></p>
                 </div>
                 
-                <div class="yyk-field">
+                <div class="yyk-field yyk-field-wide">
                     <label for="yyk_st_gifts"><?php _e('游戏礼包:', 'yyk-app-download'); ?></label>
                     <textarea id="yyk_st_gifts" name="yyk_st_gifts" 
                               class="widefat" rows="6"><?php echo esc_textarea($gifts); ?></textarea>
                     <p class="description"><?php _e('JSON格式的礼包数据', 'yyk-app-download'); ?></p>
                 </div>
                 
-                <div class="yyk-field">
+                <div class="yyk-field yyk-field-short">
                     <label for="yyk_st_video"><?php _e('游戏视频:', 'yyk-app-download'); ?></label>
                     <input type="url" id="yyk_st_video" name="yyk_st_video" 
                            value="<?php echo esc_url($video); ?>" class="widefat">
                     <p class="description"><?php _e('游戏视频的URL地址', 'yyk-app-download'); ?></p>
                 </div>
                 
-                <div class="yyk-field">
+                <div class="yyk-field yyk-field-short">
                     <label for="yyk_st_game_bbs"><?php _e('备用视频:', 'yyk-app-download'); ?></label>
                     <input type="url" id="yyk_st_game_bbs" name="yyk_st_game_bbs" 
                            value="<?php echo esc_url($game_bbs); ?>" class="widefat">
                     <p class="description"><?php _e('备用视频地址（主视频为空时使用）', 'yyk-app-download'); ?></p>
                 </div>
                 
-                <div class="yyk-field">
+                <div class="yyk-field yyk-field-short">
                     <label for="yyk_st_gamenotice"><?php _e('游戏公告:', 'yyk-app-download'); ?></label>
                     <textarea id="yyk_st_gamenotice" name="yyk_st_gamenotice" 
                               class="widefat" rows="3"><?php echo esc_textarea($gamenotice); ?></textarea>
