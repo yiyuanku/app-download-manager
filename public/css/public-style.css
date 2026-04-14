@@ -7,6 +7,12 @@
     margin: 0px;               /* 外边距10px，抵消卡片外边距 */
 }
 
+/* 桌面端默认：只显示选择的布局模式 */
+/* 非列表布局时，隐藏列表 */
+.yyk-widget-container:not(.yyk-layout-list) .yyk-widget-list {
+    display: none !important;
+}
+
 /* 布局类型 */
 .yyk-layout-grid .yyk-widget-grid {
     display: grid;              /* 使用网格布局 */
@@ -44,24 +50,119 @@
     grid-template-columns: repeat(6, 1fr);  /* 6列布局 */
 }
 
+.yyk-widget-container.yyk-columns-7 .yyk-widget-grid {
+    grid-template-columns: repeat(7, 1fr);  /* 7列布局 */
+}
+
+.yyk-widget-container.yyk-columns-8 .yyk-widget-grid {
+    grid-template-columns: repeat(8, 1fr);  /* 8列布局 */
+}
+
+.yyk-widget-container.yyk-columns-9 .yyk-widget-grid {
+    grid-template-columns: repeat(9, 1fr);  /* 9列布局 */
+}
+
+.yyk-widget-container.yyk-columns-10 .yyk-widget-grid {
+    grid-template-columns: repeat(10, 1fr);  /* 10列布局 */
+}
+
+.yyk-widget-container.yyk-columns-11 .yyk-widget-grid {
+    grid-template-columns: repeat(11, 1fr);  /* 11列布局 */
+}
+
+.yyk-widget-container.yyk-columns-12 .yyk-widget-grid {
+    grid-template-columns: repeat(12, 1fr);  /* 12列布局 */
+}
+
+.yyk-widget-container.yyk-columns-13 .yyk-widget-grid {
+    grid-template-columns: repeat(13, 1fr);  /* 13列布局 */
+}
+
+.yyk-widget-container.yyk-columns-14 .yyk-widget-grid {
+    grid-template-columns: repeat(14, 1fr);  /* 14列布局 */
+}
+
+.yyk-widget-container.yyk-columns-15 .yyk-widget-grid {
+    grid-template-columns: repeat(15, 1fr);  /* 15列布局 */
+}
+
+.yyk-widget-container.yyk-columns-16 .yyk-widget-grid {
+    grid-template-columns: repeat(16, 1fr);  /* 16列布局 */
+}
+
+.yyk-widget-container.yyk-columns-17 .yyk-widget-grid {
+    grid-template-columns: repeat(17, 1fr);  /* 17列布局 */
+}
+
+.yyk-widget-container.yyk-columns-18 .yyk-widget-grid {
+    grid-template-columns: repeat(18, 1fr);  /* 18列布局 */
+}
+
+.yyk-widget-container.yyk-columns-19 .yyk-widget-grid {
+    grid-template-columns: repeat(19, 1fr);  /* 19列布局 */
+}
+
+.yyk-widget-container.yyk-columns-20 .yyk-widget-grid {
+    grid-template-columns: repeat(20, 1fr);  /* 20列布局 */
+}
+
 /* =========== 独立卡片样式 =========== */
 .yyk-template-card {
-    background: white;          /* 白色背景 */
-    border-radius: 12px;        /* 圆角12px */
+    background: linear-gradient(145deg, #ffffff, #f8f9fa);  /* 渐变背景 */
+    border-radius: 16px;        /* 圆角16px */
     overflow: hidden;           /* 隐藏溢出内容 */
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);  /* 阴影效果 */
-    border: 1px solid #e8e8e8;  /* 边框颜色 */
-    transition: all 0.3s ease;  /* 过渡动画0.3秒 */
+    box-shadow: 
+        0 8px 30px rgba(0,0,0,0.12),  /* 主阴影 */
+        0 2px 10px rgba(0,0,0,0.06),   /* 次阴影 */
+        inset 0 1px 0 rgba(255,255,255,0.8);  /* 内阴影 */
+    border: 1px solid rgba(0,0,0,0.06);  /* 边框颜色 */
+    transition: all 0.35s cubic-bezier(0.4, 0, 0.2, 1);  /* 过渡动画 */
     margin: 5px 0px;               /* 外边距10px */
     width: calc(100% - 10px);   /* 宽度减去左右边距 */
     height: 170px;              /* 固定高度170px */
     box-sizing: border-box;     /* 盒模型计算方式 */
     display: flex;              /* 使用Flex布局 */
+    position: relative;         /* 相对定位，用于扫光效果 */
+}
+
+.yyk-template-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(
+        90deg,
+        transparent,
+        rgba(255,255,255,0.4),
+        transparent
+    );
+    transform: skewX(-25deg);
+}
+
+.yyk-template-card:hover::before {
+    animation: sweep 0.8s ease-in-out;
+}
+
+@keyframes sweep {
+    0% {
+        left: -100%;
+    }
+    50% {
+        left: 100%;
+    }
+    100% {
+        left: 100%;
+    }
 }
 
 .yyk-template-card:hover {
-    transform: translateY(-5px);  /* 悬停时上移5px */
-    box-shadow: 0 8px 25px rgba(0,0,0,0.15);  /* 悬停时阴影加深 */
+    transform: translateY(-8px) scale(1.01);  /* 悬停时上移8px并轻微放大 */
+    box-shadow: 
+        0 20px 40px rgba(0,0,0,0.18),  /* 主阴影加深 */
+        0 8px 20px rgba(0,0,0,0.12),   /* 次阴影加深 */
+        inset 0 1px 0 rgba(255,255,255,0.9);  /* 内阴影 */
 }
 
 /* 独立卡片容器 */
@@ -101,26 +202,20 @@
     display: flex;              /* 使用Flex布局 */
     flex-direction: column;     /* 垂直方向排列 */
     min-width: 0;               /* 防止内容溢出 */
+    height: 100%;              /* 100%高度 */
 }
 
-/* 第一行：应用标题 + 热门标签 */
-.yyk-template-card .yyk-card-header {
-    display: flex;              /* 使用Flex布局 */
-    justify-content: space-between;  /* 两端对齐 */
-    align-items: flex-start;    /* 顶部对齐 */
-    margin-bottom: 10px;        /* 底部外边距10px */
-}
-
+/* 标题 */
 .yyk-template-card .yyk-card-title {
     margin: 0;                  /* 外边距为0 */
     font-size: 16px;            /* 字体大小16px */
     font-weight: 600;           /* 字体粗细600 */
     line-height: 1.3;           /* 行高1.3 */
     color: #333;                /* 深灰色文字 */
-    flex: 1;                    /* 占据剩余空间 */
     overflow: hidden;           /* 隐藏溢出内容 */
     text-overflow: ellipsis;    /* 超出显示省略号 */
     white-space: nowrap;        /* 不换行 */
+    margin-bottom: 6px;         /* 底部边距 */
 }
 
 .yyk-template-card .yyk-card-title a {
@@ -132,11 +227,12 @@
     color: #0073aa;             /* 悬停时蓝色链接 */
 }
 
-/* 热门标签 - 右上角 */
+/* 热门标签 */
 .yyk-template-card .yyk-card-badges {
     display: flex;              /* 使用Flex布局 */
     gap: 5px;                   /* 标签间距5px */
-    margin-left: 10px;          /* 左边距10px */
+    margin-top: 6px;            /* 顶部边距 */
+    margin-bottom: 10px;        /* 底部边距 */
 }
 
 .yyk-template-card .yyk-badge {
@@ -163,21 +259,20 @@
     color: #27ae60;             /* 绿色文字 */
 }
 
-/* 第二行：平台类型 */
+/* 平台类型 */
 .yyk-template-card .yyk-platform-icons {
     display: flex;              /* 使用Flex布局 */
-    gap: 20px;                  /* 子元素间距20px */
-    margin-bottom: 10px;        /* 底部外边距10px */
-    font-size: 20px;            /* 字体大小20px */
+    gap: 5px;                   /* 子元素间距5px */
+    margin-bottom: 6px;         /* 底部边距 */
 }
 
 .yyk-platform-icon {
     display: inline-flex;       /* 行内Flex布局 */
     align-items: center;        /* 垂直居中 */
-    gap: 5px;                   /* 图标和文字间距5px */
+    gap: 4px;                   /* 图标和文字间距4px */
     background: #f5f7fa;        /* 浅灰色背景 */
-    padding: 4px 10px;          /* 内边距：上下4px，左右10px */
-    border-radius: 6px;         /* 圆角6px */
+    padding: 3px 8px;          /* 内边距：上下3px，左右8px */
+    border-radius: 4px;         /* 圆角4px */
     font-size: 13px;            /* 字体大小13px */
     color: #666;                /* 深灰色文字 */
 }
@@ -186,97 +281,66 @@
 .yyk-platform-icon::before {
     content: "";                /* 伪元素内容为空 */
     display: inline-block;      /* 行内块显示 */
-    width: 20px;                /* 宽度20px */
-    height: 20px;               /* 高度20px */
+    width: 18px;                /* 宽度18px */
+    height: 18px;               /* 高度18px */
     background-size: contain;   /* 背景图片包含 */
     background-repeat: no-repeat;  /* 不重复背景 */
     background-position: center;  /* 背景居中 */
     flex-shrink: 0;             /* 不允许缩小 */
 }
 
-/* ========== 方法1：直接使用外部SVG链接 ========== */
-
-/* Android - 使用外部SVG */
-.yyk-platform-icon.android::before {
-    background-image: url('/img/an/安卓.svg');  /* Android图标路径 */
-    /* 或使用相对路径: url('/wp-content/plugins/your-plugin/icons/android.svg') */
+/* 详情页平台图标样式 */
+.yyk-meta-value.yyk-platform-icon {
+    display: inline-flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    gap: 6px !important;
+    background: transparent !important;
+    padding: 0 !important;
+    border-radius: 0 !important;
+    font-size: 13px !important;
+    font-weight: 600 !important;
+    color: #333 !important;
+    white-space: nowrap !important;
+    flex-wrap: nowrap !important;
 }
 
-/* iOS - 使用外部SVG */
-.yyk-platform-icon.ios::before {
-    background-image: url('/img/an/ios.svg');   /* iOS图标路径 */
-    /* 或: url('./icons/apple.svg') */
+.yyk-meta-value.yyk-platform-icon::before {
+    display: inline-block !important;
+    flex-shrink: 0 !important;
+    width: 18px !important;
+    height: 18px !important;
 }
 
-/* PC - 使用外部SVG */
-.yyk-platform-icon.pc::before {
-    background-image: url('/img/an/Windows.svg');  /* Windows图标路径 */
+.yyk-meta-value.yyk-platform-icon.all::before {
+    width: 68px !important;
+    height: 20px !important;
 }
 
-/* All - 使用外部SVG */
-.yyk-platform-icon.all::before {
-    /* 三个独立的图标文件 */
-    background-image: 
-        url('/img/an/安卓.svg'),    /* Android图标 */
-        url('/img/an/ios.svg'),     /* iOS图标 */
-        url('/img/an/Windows.svg'); /* Windows图标 */
-    
-    /* 分别设置大小（20px宽，20px高） */
-    background-size: 20px 20px, 20px 20px, 20px 20px;
-    
-    /* 关键：设置三个图标的位置（并排） */
-    background-position: 
-        0 center,      /* 第一个图标：最左边 */
-        20px center,   /* 第二个图标：中间 */
-        40px center;   /* 第三个图标：最右边 */
-    
-    background-repeat: no-repeat;  /* 不重复背景 */
-    
-    width: 80px;      /* 容纳三个图标的宽度 */
-    height: 20px;     /* 高度20px */
-}
-
-/* 第三行：版本号、文件大小、游戏类型 */
+/* 元信息（版本号、文件大小、游戏类型） */
 .yyk-template-card .yyk-card-meta {
-    display: flex;              /* 使用Flex布局 */
-    gap: 6px;                   /* 子元素间距6px */
-    margin-bottom: 10px;        /* 底部外边距10px */
-    font-size: 13px;            /* 字体大小13px */
+    font-size: 12px;            /* 字体大小12px */
     color: #666;                /* 深灰色文字 */
+    margin-bottom: 6px;         /* 底部边距 */
 }
 
-.yyk-template-card .yyk-meta-item {
-    display: flex;
-    align-items: center;
-    gap: 5px;
-    background: #f8f9fa;
-    padding: 4px 5px;
-    border-radius: 6px;
-    white-space: nowrap;            /* 已经有不换行设置 */
-    /* 或者使用flex布局限制 */
-    flex-shrink: 1;                 /* 允许缩小 */
-    min-width: 0;                   /* 重要：允许缩小到0 */
+.yyk-template-card .yyk-meta-text {
+    white-space: nowrap;        /* 不换行 */
+    overflow: hidden;           /* 隐藏溢出 */
+    text-overflow: ellipsis;    /* 省略号 */
+    display: block;             /* 块级元素 */
 }
 
-.yyk-template-card .yyk-meta-label {
-    font-weight: 500;           /* 字体粗细500 */
-    color: #555;                /* 中灰色文字 */
+/* 按钮（永远在底部） */
+.yyk-template-card .yyk-card-actions {
+    margin-top: auto;           /* 自动顶部边距，推到底部 */
 }
 
-.yyk-template-card .yyk-meta-value {
-    color: #333;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    flex-shrink: 1;                 /* 允许缩小 */
-    min-width: 0;
-}
-
-/* 第四行：按钮 */
+/* 按钮 */
 .yyk-template-card .yyk-card-actions {
     display: flex;              /* 使用Flex布局 */
     gap: 15px;                  /* 按钮间距15px */
-    margin-top: auto;           /* 顶部自动边距，推到最下方 */
+    margin-top: 10px;           /* 顶部边距 */
 }
 
 .yyk-template-card .yyk-card-detail,
@@ -294,25 +358,29 @@
 }
 
 .yyk-template-card .yyk-card-detail {
-    background: #f0f0f0;        /* 浅灰色背景 */
-    color: #666;                /* 深灰色文字 */
-    border-color: #ddd;         /* 边框颜色 */
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    border-color: transparent;
 }
 
 .yyk-template-card .yyk-card-detail:hover {
-    background: #e5e5e5;        /* 悬停时背景变深 */
-    color: #333;                /* 悬停时文字变深 */
+    background: linear-gradient(135deg, #5a6fd6 0%, #6a4190 100%);
+    color: #fff;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.4);
 }
 
 .yyk-template-card .yyk-card-download {
-    background: #0073aa;        /* 蓝色背景 */
-    color: #fff;                /* 白色文字 */
-    border-color: #0073aa;      /* 蓝色边框 */
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: #fff;
+    border-color: transparent;
 }
 
 .yyk-template-card .yyk-card-download:hover {
-    background: #005a87;        /* 悬停时深蓝色背景 */
-    border-color: #005a87;      /* 悬停时深蓝色边框 */
+    background: linear-gradient(135deg, #e57cf0 0%, #e44a5f 100%);
+    border-color: transparent;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(245, 87, 108, 0.4);
 }
 
 /* =========== 游戏盒子卡片样式 =========== */
@@ -354,10 +422,10 @@
     top: 10px;                  /* 顶部偏移10px */
     left: 10px;                 /* 左侧偏移10px */
     right: 10px;                /* 右侧偏移10px */
-    bottom: 0px;                /* 底部偏移0px */
+    bottom: 10px;                /* 底部偏移10px */
     width: calc(100% - 20px) !important;    /* 宽度减去20px */
-    height: calc(100% - 10px) !important;   /* 高度减去20px */
-    object-fit: cover !important;           /* 图片填充方式 */
+    height: calc(100% - 20px) !important;   /* 高度减去20px */
+    object-fit: contain !important;           /* 图片填充方式 - contain确保完整显示 */
     display: block !important;  /* 块级显示 */
 }
 
@@ -378,7 +446,7 @@
 
 /* 游戏盒子内容区域 */
 .yyk-gamebox .yyk-gamebox-content {
-    padding: 20px;              /* 内边距20px */
+    padding: 12px 15px;         /* 内边距减少 */
     display: flex;              /* 使用Flex布局 */
     flex-direction: column;     /* 垂直方向排列 */
     align-items: center;        /* 水平居中 */
@@ -388,8 +456,8 @@
 
 /* 游戏盒子标题 */
 .yyk-gamebox .yyk-gamebox-title {
-    margin: 0 0 15px 0;         /* 下边距15px */
-    font-size: 16px;            /* 字体大小16px */
+    margin: 0 0 8px 0;         /* 下边距减少 */
+    font-size: 15px;            /* 字体大小稍小 */
     font-weight: 600;           /* 字体粗细600 */
     line-height: 1.3;           /* 行高1.3 */
     color: #333;                /* 深灰色文字 */
@@ -431,16 +499,25 @@
     border-color: #005a87;      /* 悬停时深蓝色边框 */
 }
 
+/* 隐藏游戏盒子下载按钮和详情按钮及元数据 */
+.yyk-gamebox .yyk-gamebox-download,
+.yyk-gamebox .yyk-gamebox-detail,
+.yyk-gamebox .yyk-gamebox-meta,
+.yyk-gamebox .yyk-gamebox-actions {
+    display: none !important;  /* 隐藏这些元素 */
+}
+
 /* 列表布局样式 */
 .yyk-list-item {
     display: flex;              /* 使用Flex布局 */
     align-items: center;        /* 垂直居中 */
     gap: 10px;                  /* 子元素间距10px */
-    padding: 10px 0px 10px 10px;              /* 内边距10px */
+    padding: 10px 10px 10px 10px;              /* 内边距10px */
     background: white;          /* 白色背景 */
     border-radius: 8px;         /* 圆角8px */
     border: 1px solid #e8e8e8;  /* 边框颜色 */
     transition: all 0.3s ease;  /* 过渡动画0.3秒 */
+    overflow: hidden;           /* 防止溢出 */
 }
 
 .yyk-list-item:hover {
@@ -501,30 +578,107 @@
     flex: 0 0 auto;             /* 不放大不缩小，自动宽度 */
 }
 
+.yyk-list-actions {
+    flex: 0 0 auto;
+}
+
+.yyk-list-download {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px 16px;
+    background: #0073aa;
+    color: #fff;
+    border: 1px solid #0073aa;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 13px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+.yyk-list-download:hover {
+    background: #005a87;
+    border-color: #005a87;
+    color: #fff;
+    box-shadow: 0 2px 8px rgba(0, 115, 170, 0.2);
+}
+
 /* 轮播布局样式 */
 .yyk-layout-carousel .yyk-widget-grid {
     display: flex;              /* 使用Flex布局 */
-    overflow-x: auto;           /* 水平滚动 */
+    overflow-x: hidden;         /* 隐藏滚动条 */
+    overflow-y: visible;        /* 垂直方向可见 */
     gap: 10px;                  /* 子元素间距20px */
-    padding: 0px 10px 10px 10px;  /* 内边距：上下20px，右20px，左0 */
-    scrollbar-width: thin;      /* 滚动条宽度 */
-    scrollbar-color: #0073aa #f0f0f0;  /* 滚动条颜色 */
+    padding: 0px 10px 10px 30px;  /* 内边距：上下20px，右20px，左30px */
     margin: 0 0 0 0;        /* 负右边距，让内容可以靠左 */
-    padding-left: 0px;         /* 添加左内边距 */
+    -webkit-overflow-scrolling: touch; /* iOS平滑滚动 */
 }
 
 .yyk-layout-carousel .yyk-widget-grid::-webkit-scrollbar {
-    height: 6px;                /* 滚动条高度6px */
+    display: none;              /* 隐藏Webkit滚动条 */
 }
 
-.yyk-layout-carousel .yyk-widget-grid::-webkit-scrollbar-track {
-    background: #f0f0f0;        /* 滚动条轨道颜色 */
-    border-radius: 3px;         /* 圆角3px */
+.yyk-layout-carousel .yyk-widget-grid {
+    -ms-overflow-style: none;   /* IE和Edge隐藏滚动条 */
+    scrollbar-width: none;      /* Firefox隐藏滚动条 */
 }
 
-.yyk-layout-carousel .yyk-widget-grid::-webkit-scrollbar-thumb {
-    background: #0073aa;        /* 滚动条滑块颜色 */
-    border-radius: 3px;         /* 圆角3px */
+/* 轮播按钮容器 */
+.yyk-widget-container.yyk-layout-carousel {
+    overflow: visible;          /* 允许按钮溢出 */
+    position: relative;         /* 相对定位 */
+    padding: 0 25px;        /* 左右留出按钮空间 */
+}
+
+/* 轮播左右按钮 */
+.yyk-carousel-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 44px;
+    height: 44px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.95);
+    border: 1px solid rgba(0, 0, 0, 0.15);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    font-weight: bold;
+    color: #333;
+    z-index: 9999;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    line-height: 1;
+    padding: 0;
+}
+
+.yyk-carousel-btn:hover {
+    background: #fff;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.2);
+    transform: translateY(-50%) scale(1.1);
+    color: #0073aa;
+}
+
+.yyk-carousel-btn:active {
+    transform: translateY(-50%) scale(0.95);
+}
+
+.yyk-carousel-btn-prev {
+    left: 0;
+}
+
+.yyk-carousel-btn-next {
+    right: 0;
+}
+
+.yyk-carousel-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    pointer-events: none;
 }
 
 .yyk-layout-carousel .yyk-template-card {
@@ -676,12 +830,112 @@
 
 /* 手机（<576px） */
 @media (max-width: 576px) {
-    .yyk-widget-container.yyk-columns-2 .yyk-widget-grid,
-    .yyk-widget-container.yyk-columns-3 .yyk-widget-grid,
-    .yyk-widget-container.yyk-columns-4 .yyk-widget-grid,
-    .yyk-widget-container.yyk-columns-5 .yyk-widget-grid,
-    .yyk-widget-container.yyk-columns-6 .yyk-widget-grid {
-        grid-template-columns: 1fr;  /* 1列布局 */
+    /* 手机端强制使用列表模式，隐藏所有非列表内容 - 用更具体的选择器 */
+    .yyk-widget-container:not(.yyk-layout-list) .yyk-widget-grid,
+    .yyk-widget-container.yyk-layout-list .yyk-widget-grid,
+    .yyk-widget-container .yyk-pagination,
+    .yyk-widget-container .yyk-carousel-btn {
+        display: none !important;  /* 隐藏网格、分页、轮播按钮 */
+    }
+    
+    /* 强制显示列表模式，覆盖桌面端设置 - 用更具体的选择器 */
+    .yyk-widget-container:not(.yyk-layout-list) .yyk-widget-list,
+    .yyk-widget-container.yyk-layout-list .yyk-widget-list {
+        display: flex !important;  /* 显示列表 */
+        flex-direction: column !important;
+        gap: 10px !important;
+        margin-bottom: 10px !important;
+    }
+    
+    /* 强制应用列表样式，覆盖其他样式 */
+    .yyk-widget-container .yyk-list-item {
+        display: flex !important;
+        align-items: flex-start !important;
+        gap: 12px !important;
+        padding: 12px !important;
+        background: #fff !important;
+        border-radius: 8px !important;
+        margin-bottom: 10px !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+        transition: all 0.3s ease !important;
+    }
+    
+    .yyk-widget-container .yyk-list-icon {
+        width: 64px !important;
+        height: 64px !important;
+        flex-shrink: 0 !important;
+        border-radius: 12px !important;
+        overflow: hidden !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+    }
+    
+    .yyk-widget-container .yyk-list-icon img {
+        width: 100% !important;
+        height: 100% !important;
+        object-fit: contain !important;  /* 改为contain，确保图标完整显示不变形 */
+        background: #f8f9fa !important;  /* 添加浅灰色背景 */
+    }
+    
+    .yyk-widget-container .yyk-list-content {
+        flex: 1 !important;
+        min-width: 0 !important;
+    }
+    
+    .yyk-widget-container .yyk-list-title {
+        font-size: 15px !important;
+        font-weight: 600 !important;
+        color: #333 !important;
+        margin: 0 0 8px 0 !important;
+        line-height: 1.3 !important;
+        display: -webkit-box !important;
+        -webkit-line-clamp: 1 !important;
+        -webkit-box-orient: vertical !important;
+        overflow: hidden !important;
+    }
+    
+    .yyk-widget-container .yyk-list-desc {
+        font-size: 12px !important;
+        color: #666 !important;
+        margin: 0 0 10px 0 !important;
+        line-height: 1.4 !important;
+        display: -webkit-box !important;
+        -webkit-line-clamp: 2 !important;
+        -webkit-box-orient: vertical !important;
+        overflow: hidden !important;
+    }
+    
+    .yyk-widget-container .yyk-list-meta {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        gap: 8px !important;
+        font-size: 11px !important;
+        color: #999 !important;
+    }
+    
+    .yyk-widget-container .yyk-list-actions {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 8px !important;
+        flex-shrink: 0 !important;
+    }
+    
+    .yyk-widget-container .yyk-list-download {
+        display: inline-block !important;
+        padding: 6px 16px !important;
+        background: linear-gradient(135deg, #0073aa 0%, #00a0d2 100%) !important;
+        color: #fff !important;
+        font-size: 12px !important;
+        font-weight: 500 !important;
+        text-decoration: none !important;
+        border-radius: 20px !important;
+        transition: all 0.3s ease !important;
+        box-shadow: 0 2px 8px rgba(0, 115, 170, 0.3) !important;
+    }
+    
+    .yyk-widget-container .yyk-list-download:hover {
+        background: linear-gradient(135deg, #005a87 0%, #0073aa 100%) !important;
+        transform: translateY(-1px) !important;
+        box-shadow: 0 4px 12px rgba(0, 115, 170, 0.4) !important;
     }
     
     .yyk-template-card {
@@ -726,10 +980,10 @@
     }
     
     .yyk-layout-carousel .yyk-template-card {
-    width: 300px;           /* 轮播卡片宽度250px */
+    width: 200px;           /* 轮播卡片宽度250px */
     }
     .yyk-layout-carousel .yyk-gamebox {
-        width: 150px;           /* 轮播卡片宽度250px */
+        width: 100px;           /* 轮播卡片宽度250px */
     }
 }
 
@@ -1092,46 +1346,1056 @@ body .yyk-archive-container .yyk-app-grid {
     display: flex;              /* 使用Flex布局 */
     justify-content: space-between;  /* 两端对齐 */
     align-items: center;        /* 垂直居中 */
-    margin-bottom: 20px;        /* 下边距20px */
-    padding-bottom: 15px;       /* 底部内边距15px */
-    border-bottom: 2px solid #f0f0f0;  /* 底部边框 */
+    margin-bottom: 10px;        /* 下边距20px */
+    padding: 10px 10px;         /* 内边距减小 */
+    background: transparent;     /* 完全透明背景 */
+    backdrop-filter: blur(12px);  /* 毛玻璃模糊效果 */
+    -webkit-backdrop-filter: blur(12px);  /* Safari兼容 */
+    border-radius: 12px;         /* 圆角12px */
+    border-bottom: 1px solid rgba(102, 126, 234, 0.3);  /* 底部半透明紫色边框 */
+    box-shadow: 
+        0 8px 32px rgba(0, 0, 0, 0.06);  /* 柔和阴影 */
     position: relative;         /* 相对定位 */
+    overflow: hidden;           /* 隐藏溢出 */
+}
+
+.yyk-widget-header::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: 
+        radial-gradient(circle at 8% 25%, rgba(102, 126, 234, 0.4) 0%, rgba(102, 126, 234, 0.4) 4px, transparent 5px),
+        radial-gradient(circle at 92% 35%, rgba(118, 75, 162, 0.4) 0%, rgba(118, 75, 162, 0.4) 5px, transparent 6px),
+        radial-gradient(circle at 15% 75%, rgba(6, 182, 212, 0.35) 0%, rgba(6, 182, 212, 0.35) 3px, transparent 4px),
+        radial-gradient(circle at 85% 80%, rgba(168, 85, 247, 0.4) 0%, rgba(168, 85, 247, 0.4) 4px, transparent 5px),
+        radial-gradient(circle at 50% 15%, rgba(236, 72, 153, 0.35) 0%, rgba(236, 72, 153, 0.35) 3px, transparent 4px),
+        radial-gradient(circle at 50% 85%, rgba(102, 126, 234, 0.3) 0%, rgba(102, 126, 234, 0.3) 4px, transparent 5px);
+    background-size: 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%;
+    animation: dotFloat 10s ease-in-out infinite;
+    pointer-events: none;
+}
+
+.yyk-widget-header::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-image: 
+        radial-gradient(circle at 12% 18%, rgba(255, 99, 132, 0.5) 0%, rgba(255, 99, 132, 0.5) 8px, transparent 9px),
+        radial-gradient(circle at 88% 22%, rgba(54, 215, 183, 0.5) 0%, rgba(54, 215, 183, 0.5) 6px, transparent 7px),
+        radial-gradient(circle at 25% 82%, rgba(255, 206, 86, 0.5) 0%, rgba(255, 206, 86, 0.5) 7px, transparent 8px),
+        radial-gradient(circle at 78% 78%, rgba(151, 117, 250, 0.5) 0%, rgba(151, 117, 250, 0.5) 5px, transparent 6px),
+        radial-gradient(circle at 5% 55%, rgba(255, 159, 67, 0.5) 0%, rgba(255, 159, 67, 0.5) 9px, transparent 10px),
+        radial-gradient(circle at 95% 48%, rgba(75, 192, 192, 0.4) 0%, rgba(75, 192, 192, 0.4) 4px, transparent 5px),
+        radial-gradient(circle at 35% 35%, rgba(255, 99, 132, 0.3) 0%, rgba(255, 99, 132, 0.3) 5px, transparent 6px),
+        radial-gradient(circle at 68% 62%, rgba(102, 126, 234, 0.45) 0%, rgba(102, 126, 234, 0.45) 7px, transparent 8px),
+        radial-gradient(circle at 42% 68%, rgba(118, 75, 162, 0.4) 0%, rgba(118, 75, 162, 0.4) 5px, transparent 6px),
+        radial-gradient(circle at 72% 12%, rgba(6, 182, 212, 0.35) 0%, rgba(6, 182, 212, 0.35) 6px, transparent 7px),
+        radial-gradient(circle at 22% 52%, rgba(168, 85, 247, 0.45) 0%, rgba(168, 85, 247, 0.45) 8px, transparent 9px),
+        radial-gradient(circle at 82% 88%, rgba(236, 72, 153, 0.35) 0%, rgba(236, 72, 153, 0.35) 4px, transparent 5px);
+    background-size: 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%, 100% 100%;
+    animation: dotFloatRandom 12s ease-in-out infinite;
+    pointer-events: none;
+}
+
+@keyframes dotFloatRandom {
+    0%, 100% {
+        transform: translateY(0) scale(1) rotate(0deg);
+        opacity: 0.7;
+    }
+    25% {
+        transform: translateY(-5px) scale(1.02) rotate(2deg);
+        opacity: 0.9;
+    }
+    50% {
+        transform: translateY(-8px) scale(1.05) rotate(0deg);
+        opacity: 1;
+    }
+    75% {
+        transform: translateY(-3px) scale(1.03) rotate(-2deg);
+        opacity: 0.85;
+    }
+}
+
+.yyk-shape {
+    position: absolute;
+    pointer-events: none;
+    z-index: 0;
+}
+
+.yyk-shape.shape-1 {
+    top: 10px;
+    left: 5%;
+    width: 12px;
+    height: 12px;
+    background: rgba(255, 99, 132, 0.6);
+    border-radius: 50%;
+    animation: shapeFloat 6s ease-in-out infinite;
+}
+
+.yyk-shape.shape-2 {
+    top: 25px;
+    right: 8%;
+    width: 16px;
+    height: 16px;
+    background: rgba(54, 215, 183, 0.6);
+    border-radius: 3px;
+    transform: rotate(45deg);
+    animation: shapeFloat 7s ease-in-out infinite 0.5s;
+}
+
+.yyk-shape.shape-3 {
+    bottom: 15px;
+    left: 12%;
+    width: 0;
+    height: 0;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    border-bottom: 18px solid rgba(255, 206, 86, 0.6);
+    animation: shapeFloat 8s ease-in-out infinite 1s;
+}
+
+.yyk-shape.shape-4 {
+    bottom: 20px;
+    right: 15%;
+    width: 10px;
+    height: 10px;
+    background: rgba(151, 117, 250, 0.6);
+    border-radius: 50%;
+    animation: shapeFloat 6.5s ease-in-out infinite 1.5s;
+}
+
+.yyk-shape.shape-5 {
+    top: 35px;
+    left: 25%;
+    width: 8px;
+    height: 8px;
+    background: rgba(255, 159, 67, 0.6);
+    border-radius: 2px;
+    animation: shapeFloat 7.5s ease-in-out infinite 0.8s;
+}
+
+.yyk-shape.shape-6 {
+    top: 15px;
+    right: 28%;
+    width: 0;
+    height: 0;
+    border-top: 9px solid transparent;
+    border-bottom: 9px solid transparent;
+    border-right: 16px solid rgba(75, 192, 192, 0.6);
+    animation: shapeFloat 8.5s ease-in-out infinite 1.2s;
+}
+
+.yyk-shape.shape-7 {
+    bottom: 30px;
+    left: 35%;
+    width: 14px;
+    height: 14px;
+    background: rgba(236, 72, 153, 0.5);
+    border-radius: 50%;
+    animation: shapeFloat 6.8s ease-in-out infinite 0.3s;
+}
+
+.yyk-shape.shape-8 {
+    top: 45px;
+    right: 40%;
+    width: 11px;
+    height: 11px;
+    background: rgba(102, 126, 234, 0.5);
+    border-radius: 2px;
+    transform: rotate(30deg);
+    animation: shapeFloat 7.2s ease-in-out infinite 1.8s;
+}
+
+@keyframes shapeFloat {
+    0%, 100% {
+        transform: translateY(0) rotate(0deg) scale(1);
+        opacity: 0.6;
+    }
+    50% {
+        transform: translateY(-10px) rotate(10deg) scale(1.1);
+        opacity: 1;
+    }
+}
+
+@keyframes dotFloat {
+    0%, 100% {
+        transform: translateY(0);
+        opacity: 0.7;
+    }
+    50% {
+        transform: translateY(-5px);
+        opacity: 1;
+    }
 }
 
 /* 小工具标题 */
 .yyk-widget-header .widget-title {
     margin: 0 !important;       /* 外边距为0 */
     font-size: 18px;            /* 字体大小18px */
-    font-weight: 600;           /* 字体粗细600 */
-    color: #333;                /* 深灰色文字 */
+    font-weight: 700;           /* 字体粗细700 */
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);  /* 紫蓝渐变 */
+    -webkit-background-clip: text;  /* 背景裁剪到文字 */
+    -webkit-text-fill-color: transparent;  /* 文字透明 */
+    background-clip: text;      /* 标准属性 */
     flex: 1;                    /* 占据剩余空间 */
+    position: relative;
+    z-index: 10;
 }
 
 /* 更多按钮 */
 .yyk-widget-more {
-    display: inline-block;      /* 行内块显示 */
-    padding: 6px 15px;          /* 内边距：上下6px，左右15px */
-    background: #0073aa;        /* 蓝色背景 */
-    color: white !important;    /* 白色文字 */
-    border-radius: 4px;         /* 圆角4px */
+    display: inline-flex;       /* 行内Flex布局 */
+    align-items: center;        /* 垂直居中 */
+    padding: 6px 14px;          /* 内边距减小 */
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.15), rgba(118, 75, 162, 0.15));  /* 半透明渐变背景 */
+    color: #667eea !important; /* 紫色文字 */
+    border: 1px solid rgba(102, 126, 234, 0.4);  /* 半透明紫色边框 */
+    border-radius: 25px;         /* 圆角胶囊形 */
     text-decoration: none;      /* 无下划线 */
     font-size: 13px;            /* 字体大小13px */
-    font-weight: 500;           /* 字体粗细500 */
-    transition: all 0.3s ease;  /* 过渡动画0.3秒 */
-    border: 1px solid #0073aa;  /* 蓝色边框 */
+    font-weight: 600;           /* 字体粗细600 */
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);  /* 过渡动画 */
     white-space: nowrap;        /* 不换行 */
     margin-left: 15px;          /* 左边距15px */
+    position: relative;
+    z-index: 10;
 }
 
 .yyk-widget-more:hover {
-    background: #005a87;        /* 悬停时深蓝色背景 */
-    border-color: #005a87;      /* 悬停时深蓝色边框 */
-    color: white !important;    /* 悬停时白色文字 */
-    transform: translateX(3px);  /* 悬停时右移3px */
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.25), rgba(118, 75, 162, 0.25));  /* 悬停时背景加深 */
+    border-color: rgba(102, 126, 234, 0.7);  /* 悬停时边框加深 */
+    transform: translateY(-2px);  /* 悬停时上移2px */
+    box-shadow: 0 4px 15px rgba(102, 126, 234, 0.2);  /* 阴影 */
 }
 
 /* 如果没有标题，更多按钮单独显示 */
 .widget:not(:has(.widget-title)) .yyk-widget-more {
+}
+
+/* ===== 详情页专用样式 ===== */
+.yyk-single-app-container {
+    max-width: 1200px;
+    margin: 30px auto;
+    padding: 20px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+}
+
+/* 应用头部 */
+.yyk-app-header {
+    display: grid;
+    grid-template-columns: 200px 1fr auto;
+    gap: 30px;
+    align-items: start;
+    padding: 30px;
+    border-bottom: 2px solid #f0f0f0;
+    margin-bottom: 30px;
+}
+
+/* 应用图标 */
+.yyk-app-icon-wrapper {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.yyk-app-icon {
+    width: 200px;
+    height: 200px;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+    background: white;
+}
+
+.yyk-app-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    padding: 15px;
+    box-sizing: border-box;
+}
+
+.yyk-app-short-intro {
+    margin: 0;
+    font-size: 15px;
+    color: #666;
+    line-height: 1.6;
+    text-align: center;
+}
+
+/* 应用信息 */
+.yyk-app-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.yyk-app-title {
+    margin: 0;
+    font-size: 32px;
+    font-weight: 700;
+    color: #333;
+    line-height: 1.2;
+}
+
+.yyk-app-title-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+}
+
+/* 应用标签 */
+.yyk-app-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.yyk-tag {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 14px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+.yyk-tag-discount {
+    background: linear-gradient(135deg, #ff6b6b 0%, #ee5a5a 100%);
+    color: white;
+}
+
+.yyk-tag-fuli {
+    background: linear-gradient(135deg, #feca57 0%, #ff9f43 100%);
+    color: white;
+}
+
+/* 隐藏类 */
+.yyk-hidden {
+    display: none !important;
+}
+
+/* 分页容器 */
+.yyk-pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 15px;
+    margin-top: 20px;
+    padding-top: 15px;
+    border-top: 1px solid #eee;
+}
+
+/* 分页按钮 */
+.yyk-pagination-prev,
+.yyk-pagination-next {
+    padding: 10px 20px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.yyk-pagination-prev:hover:not(:disabled),
+.yyk-pagination-next:hover:not(:disabled) {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+.yyk-pagination-prev:disabled,
+.yyk-pagination-next:disabled {
+    background: #ccc;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* 分页信息 */
+.yyk-pagination-info {
+    font-size: 14px;
+    color: #666;
+    font-weight: 500;
+}
+
+/* 应用元数据 */
+.yyk-app-meta {
+    margin-bottom: 20px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+}
+
+.yyk-meta-item {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    align-items: center !important;
+    gap: 6px !important;
+    padding: 8px 12px !important;
+    background: #f8f9fa !important;
+    border-radius: 6px !important;
+}
+
+.yyk-meta-label {
+    font-weight: 600;
+    color: #999;
+    font-size: 13px;
+    line-height: 1.5;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.yyk-meta-value {
+    color: #333;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.5;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* 应用操作按钮 */
+.yyk-app-actions {
+    display: flex;
+    gap: 15px;
+    flex-wrap: wrap;
+    margin-top: 25px;
+}
+
+.yyk-download-btn {
+    padding: 14px 28px !important;
+    border-radius: 12px;
+    text-decoration: none;
+    font-size: 16px !important;
+    font-weight: 600;
+    text-align: center;
+    min-width: 150px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+.yyk-download-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: left 0.5s ease;
+}
+
+.yyk-download-btn:hover::before {
+    left: 100%;
+}
+
+.yyk-download-btn:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0,0,0,0.2);
+}
+
+.yyk-download-btn:active {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+}
+
+.yyk-download-btn.yyk-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.yyk-download-btn.yyk-primary:hover {
+    box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+}
+
+.yyk-download-btn.yyk-android {
+    background: linear-gradient(135deg, #3ddc84 0%, #00c853 100%);
+    color: white;
+}
+
+.yyk-download-btn.yyk-android:hover {
+    box-shadow: 0 8px 25px rgba(61, 220, 132, 0.4);
+}
+
+.yyk-download-btn.yyk-ios {
+    background: linear-gradient(135deg, #1a1a1a 0%, #333333 100%);
+    color: white;
+}
+
+.yyk-download-btn.yyk-ios:hover {
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+}
+
+/* 二维码 */
+.yyk-qr-code {
+    text-align: center;
+    padding: 15px;
+    background: #f8f9fa;
+    border-radius: 10px;
+    border: 1px solid #e9ecef;
+    width: 180px;
+}
+
+.yyk-qr-code img {
+    width: 150px;
+    height: 150px;
+    display: block;
+    margin: 0 auto 10px;
+}
+
+.yyk-qr-code p {
+    margin: 0;
+    font-size: 14px;
+    color: #666;
+    font-weight: 500;
+}
+
+/* 应用内容区域 */
+.yyk-app-content {
+    padding: 0 30px 30px;
+}
+
+/* 福利简介 */
+.yyk-app-excerpt {
+    display: flex;
+    align-items: flex-start;
+    gap: 20px;
+    padding: 24px;
+    background: linear-gradient(135deg, #fff8f0 0%, #fff 100%);
+    border-radius: 16px;
+    border: 2px solid #ffe0b2;
+    margin-bottom: 40px;
+    position: relative;
+    overflow: hidden;
+}
+
+.yyk-app-excerpt::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 4px;
+    background: linear-gradient(180deg, #ff9800, #f57c00);
+}
+
+.yyk-excerpt-icon {
+    font-size: 48px;
+    flex-shrink: 0;
+    filter: drop-shadow(0 2px 8px rgba(255, 152, 0, 0.25));
+}
+
+.yyk-excerpt-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.yyk-excerpt-content h3 {
+    margin: 0 0 12px 0;
+    font-size: 20px;
+    font-weight: 800;
+    color: #e65100;
+}
+
+.yyk-excerpt-content p {
+    margin: 0;
+    font-size: 16px;
+    color: #666;
+    line-height: 1.8;
+}
+
+/* 标签页 */
+.yyk-tabs {
+    margin-bottom: 40px;
+}
+
+.yyk-tabs-nav {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 24px;
+    padding: 8px;
+    background: #f5f5f5;
+    border-radius: 12px;
+}
+
+.yyk-tab-btn {
+    flex: 1;
+    padding: 14px 24px;
+    background: transparent;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    color: #666;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.yyk-tab-btn:hover {
+    background: rgba(102, 126, 234, 0.1);
+    color: #667eea;
+}
+
+.yyk-tab-btn.active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
+}
+
+.yyk-tabs-content {
+    position: relative;
+}
+
+.yyk-tab-panel {
+    display: none;
+    animation: fadeIn 0.3s ease;
+}
+
+.yyk-tab-panel.active {
+    display: block;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.yyk-app-content h2 {
+    margin: 0 0 20px 0;
+    font-size: 28px;
+    color: #333;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #f0f0f0;
+}
+
+.yyk-app-description {
+    font-size: 16px;
+    line-height: 1.8;
+    color: #444;
+    margin-bottom: 40px;
+}
+
+/* 五宣图/游戏截图 */
+.yyk-app-screenshots {
+    margin: 40px 0;
+}
+
+.yyk-app-screenshots h2 {
+    margin: 0 0 20px 0;
+    font-size: 28px;
+    color: #333;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #f0f0f0;
+}
+
+.yyk-screenshot-wrapper {
+    position: relative;
+}
+
+.yyk-screenshot-btn {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255, 255, 255, 0.85);
+    color: #333;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 2px 12px rgba(0,0,0,0.15);
+    transition: all 0.3s ease;
+    z-index: 10;
+}
+
+.yyk-screenshot-prev {
+    left: 10px;
+}
+
+.yyk-screenshot-next {
+    right: 10px;
+}
+
+.yyk-screenshot-btn:hover {
+    background: rgba(255, 255, 255, 1);
+    color: #667eea;
+    transform: translateY(-50%) scale(1.1);
+}
+
+.yyk-screenshot-btn:active {
+    transform: translateY(-50%) scale(0.95);
+}
+
+.yyk-screenshot-list {
+    display: flex;
+    gap: 15px;
+    overflow-x: hidden;
+    scroll-behavior: smooth;
+    padding: 0 30px;
+}
+
+.yyk-screenshot-item {
+    flex-shrink: 0;
+    width: 280px;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    background: white;
+}
+
+.yyk-screenshot-item img {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+/* 游戏礼包 */
+.yyk-app-gifts {
+    margin: 40px 0;
+}
+
+.yyk-app-gifts h2 {
+    margin: 0 0 20px 0;
+    font-size: 28px;
+    color: #333;
+    padding-bottom: 15px;
+    border-bottom: 2px solid #f0f0f0;
+}
+
+.yyk-gifts-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.yyk-gift-item {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    padding: 20px 24px;
+    background: linear-gradient(135deg, #fff8f0 0%, #fff 100%);
+    border-radius: 12px;
+    border: 2px solid #ffe0b2;
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+.yyk-gift-item::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    bottom: 0;
+    width: 4px;
+    background: linear-gradient(180deg, #ff9800, #f57c00);
+}
+
+.yyk-gift-item:hover {
+    transform: translateX(4px);
+    box-shadow: 0 4px 16px rgba(255, 152, 0, 0.15);
+    border-color: #ff9800;
+}
+
+.yyk-gift-icon {
+    font-size: 48px;
+    flex-shrink: 0;
+    filter: drop-shadow(0 2px 8px rgba(255, 152, 0, 0.25));
+}
+
+.yyk-gift-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.yyk-gift-name {
+    margin: 0 0 8px 0;
+    font-size: 18px;
+    font-weight: 700;
+    color: #e65100;
+}
+
+.yyk-gift-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 12px;
+}
+
+.yyk-gift-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 12px;
+    background: #ff9800;
+    color: white;
+    font-size: 13px;
+    font-weight: 600;
+    border-radius: 20px;
+}
+
+.yyk-gift-time {
+    font-size: 13px;
+    color: #999;
+}
+
+.yyk-gift-btn {
+    padding: 12px 32px;
+    background: linear-gradient(135deg, #ff9800 0%, #f57c00 100%);
+    color: white;
+    text-decoration: none;
+    border-radius: 30px;
+    font-weight: 700;
+    font-size: 15px;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 12px rgba(255, 152, 0, 0.3);
+    flex-shrink: 0;
+    border: none;
+    cursor: pointer;
+}
+
+.yyk-gift-btn:hover {
+    transform: scale(1.05);
+    box-shadow: 0 6px 16px rgba(255, 152, 0, 0.4);
+    color: white;
+}
+
+.yyk-gift-btn:active {
+    transform: scale(0.98);
+}
+
+.yyk-gift-btn.copied {
+    background: linear-gradient(135deg, #4caf50 0%, #388e3c 100%);
+    box-shadow: 0 4px 12px rgba(76, 175, 80, 0.3);
+}
+
+/* 应用分类 */
+.yyk-app-categories {
+    margin: 40px 0;
+    padding: 25px;
+    background: #f8f9fa;
+    border-radius: 10px;
+}
+
+.yyk-category-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+
+.yyk-category-tag {
+    background: white;
+    color: #0073aa;
+    padding: 8px 16px;
+    border-radius: 20px;
+    text-decoration: none;
+    font-size: 14px;
+    font-weight: 500;
+    border: 1px solid #0073aa;
+    transition: all 0.3s ease;
+}
+
+/* 相关应用 */
+.yyk-related-apps {
+    margin-top: 50px;
+    padding-top: 30px;
+    border-top: 2px solid #f0f0f0;
+}
+
+.yyk-related-list {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+    gap: 20px;
+}
+
+.yyk-related-item {
+    background: white;
+    border-radius: 10px;
+    padding: 15px;
+    text-align: center;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    transition: all 0.3s ease;
+}
+
+.yyk-related-icon {
+    width: 80px;
+    height: 80px;
+    margin: 0 auto 15px;
+    border-radius: 16px;
+    overflow: hidden;
+    background: white;
+}
+
+.yyk-related-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    padding: 10px;
+    box-sizing: border-box;
+}
+
+.yyk-related-title {
+    margin: 0;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
+/* 响应式设计 */
+@media (max-width: 992px) {
+    .yyk-app-header {
+        grid-template-columns: 150px 1fr;
+    }
+    
+    .yyk-app-icon {
+        width: 150px;
+        height: 150px;
+    }
+    
+    .yyk-app-short-intro {
+        max-width: 150px;
+    }
+    
+    .yyk-app-meta {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 768px) {
+    .yyk-single-app-container {
+        margin: 15px auto;
+        padding: 15px;
+    }
+    
+    .yyk-app-header {
+        grid-template-columns: 1fr;
+        gap: 20px;
+        text-align: center;
+    }
+    
+    .yyk-app-icon-wrapper {
+        align-items: center;
+    }
+    
+    .yyk-app-icon {
+        width: 120px;
+        height: 120px;
+        margin: 0 auto;
+    }
+    
+    .yyk-app-short-intro {
+        max-width: none;
+    }
+    
+    .yyk-app-title {
+        font-size: 24px;
+        text-align: center;
+        margin-bottom: 10px;
+    }
+    
+    .yyk-app-title-wrapper {
+        justify-content: center;
+        text-align: center;
+    }
+    
+    .yyk-app-tags {
+        justify-content: center;
+    }
+    
+    .yyk-app-meta {
+        text-align: center;
+        grid-template-columns: 1fr;
+        gap: 6px;
+        margin-bottom: 15px;
+    }
+    
+    .yyk-meta-item {
+        justify-content: center;
+        flex-direction: row !important;
+        padding: 5px 8px !important;
+        gap: 5px !important;
+    }
+    
+    .yyk-meta-label {
+        margin-right: 5px;
+        margin-bottom: 0;
+    }
+    
+    .yyk-app-actions {
+        justify-content: center;
+    }
+    
+    .yyk-download-btn {
+        min-width: 120px;
+        padding: 12px 20px;
+        font-size: 14px;
+    }
+    
+    .yyk-qr-code {
+        grid-column: 1 / -1;
+        width: auto;
+        margin-top: 20px;
+    }
+    
+    .yyk-app-content {
+        padding: 0 15px 20px;
+    }
+    
+    .yyk-screenshot-btn {
+        width: 40px;
+        height: 40px;
+    }
+    
+    .yyk-screenshot-prev {
+        left: 5px;
+    }
+    
+    .yyk-screenshot-next {
+        right: 5px;
+    }
+    
+    .yyk-screenshot-btn svg {
+        width: 20px;
+        height: 20px;
+    }
+    
+    .yyk-screenshot-list {
+        padding: 0 25px;
+    }
+    
+    .yyk-screenshot-item {
+        width: 200px;
+    }
+}
     display: inline-block;      /* 行内块显示 */
     margin: 0 0 20px 0;         /* 下边距20px */
     align-self: flex-start;     /* 自身顶部对齐 */
@@ -1152,3 +2416,914 @@ body .yyk-archive-container .yyk-app-grid {
 }
 
 /* ===== 原有的小工具样式保持 ===== */
+
+/* ===== 详情页新增内容样式 ===== */
+
+/* 应用标签区域 */
+.yyk-app-tags {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+    flex-wrap: wrap;
+}
+
+.yyk-tag {
+    display: inline-block;
+    padding: 4px 12px;
+    font-size: 12px;
+    font-weight: 600;
+    border-radius: 4px;
+    white-space: nowrap;
+}
+
+.yyk-tag-discount {
+    background: #fff3cd;
+    color: #856404;
+}
+
+.yyk-tag-fuli {
+    background: #d4edda;
+    color: #155724;
+}
+
+/* 一句话简介 */
+.yyk-app-subtitle {
+    margin: 15px 0 0 0;
+    font-size: 15px;
+    color: #666;
+    line-height: 1.5;
+}
+
+/* 返利和VIP介绍区域 */
+.yyk-app-benefits {
+    margin-top: 30px;
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.yyk-benefit-item {
+    background: #fff;
+    border-radius: 12px;
+    padding: 20px;
+    border: 1px solid #e8e8e8;
+}
+
+.yyk-benefit-item h3 {
+    margin: 0 0 15px 0;
+    font-size: 18px;
+    color: #333;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.yyk-benefit-fanli h3::before {
+    content: '🎁';
+}
+
+.yyk-benefit-vip h3::before {
+    content: '👑';
+}
+
+.yyk-benefit-content {
+    color: #666;
+    line-height: 1.7;
+    font-size: 14px;
+}
+
+.yyk-benefit-content p {
+    margin: 0 0 10px 0;
+}
+
+.yyk-benefit-content p:last-child {
+    margin-bottom: 0;
+}
+
+@media (max-width: 768px) {
+    .yyk-app-benefits {
+        gap: 15px;
+    }
+    
+    .yyk-benefit-item {
+        padding: 15px;
+    }
+}
+
+/* ===== 归档页核心样式 ===== */
+.yyk-archive-container {
+    max-width: 1200px;
+    margin: 30px auto;
+    padding: 20px;
+}
+
+/* 搜索框样式 */
+.yyk-archive-search-section {
+    margin-bottom: 30px;
+}
+
+.yyk-search-container {
+    position: relative;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.yyk-search-box {
+    display: flex;
+    align-items: center;
+    background: white;
+    border-radius: 50px;
+    padding: 5px;
+    box-shadow: 0 6px 20px rgba(0,0,0,0.1);
+    border: 2px solid #e8e8e8;
+    transition: all 0.3s ease;
+    margin-bottom: 15px;
+}
+
+.yyk-search-box:focus-within {
+    border-color: #0073aa;
+    box-shadow: 0 8px 25px rgba(0, 115, 170, 0.2);
+}
+
+#yyk-realtime-search {
+    flex: 1;
+    border: none;
+    padding: 15px 25px;
+    font-size: 16px;
+    background: transparent;
+    outline: none;
+    color: #333;
+    transition: all 0.3s ease;
+}
+
+#yyk-realtime-search::placeholder {
+    color: #999;
+}
+
+#yyk-realtime-search:focus {
+    border-color: #0073aa;
+    box-shadow: 0 0 0 3px rgba(0, 115, 170, 0.1);
+}
+
+.yyk-search-submit {
+    background: #0073aa;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-right: 5px;
+}
+
+.yyk-search-submit:hover {
+    background: #005a87;
+    transform: scale(1.05);
+}
+
+.yyk-search-submit svg {
+    width: 20px;
+    height: 20px;
+    stroke-width: 2.5;
+}
+
+.yyk-search-info {
+    text-align: center;
+    color: #666;
+    font-size: 14px;
+    padding: 10px 15px;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.yyk-search-info .yyk-count {
+    color: #0073aa;
+    font-weight: 600;
+    font-size: 16px;
+}
+
+.yyk-search-keyword {
+    margin-left: 15px;
+    color: #e74c3c;
+    font-weight: 500;
+}
+
+/* 分类标题样式 */
+.yyk-category-header-section {
+    position: relative;
+    border-radius: 20px;
+    margin-bottom: 30px;
+    overflow: hidden;
+    background-size: cover;
+    background-position: center center;
+    background-repeat: no-repeat;
+    min-height: 300px;
+    display: flex;
+    align-items: center;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+}
+
+.yyk-header-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(135deg, 
+                rgba(0, 0, 0, 0.7) 0%,
+                rgba(0, 0, 0, 0.5) 50%,
+                rgba(0, 0, 0, 0.3) 100%);
+    z-index: 1;
+}
+
+.yyk-header-content {
+    position: relative;
+    z-index: 2;
+    color: white;
+    padding: 40px;
+    width: 100%;
+}
+
+.yyk-category-badge,
+.yyk-all-apps-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(255, 255, 255, 0.15);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 500;
+    margin-bottom: 20px;
+}
+
+.yyk-category-title {
+    font-size: 48px;
+    font-weight: 800;
+    line-height: 1.2;
+    margin: 0 0 20px 0;
+    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
+    letter-spacing: -0.5px;
+}
+
+.yyk-category-description {
+    font-size: 18px;
+    line-height: 1.6;
+    margin-bottom: 30px;
+    max-width: 600px;
+    opacity: 0.9;
+}
+
+.yyk-category-description strong {
+    color: #00d4ff;
+    font-weight: 600;
+}
+
+.yyk-category-stats {
+    display: flex;
+    gap: 30px;
+    flex-wrap: wrap;
+}
+
+.yyk-stat-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 15px 25px;
+    background: rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(10px);
+    border-radius: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    transition: all 0.3s ease;
+    min-width: 120px;
+}
+
+.yyk-stat-item:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-5px);
+}
+
+.yyk-stat-number {
+    font-size: 36px;
+    font-weight: 800;
+    line-height: 1;
+    margin-bottom: 5px;
+    background: linear-gradient(45deg, #00d4ff, #0073aa);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+}
+
+.yyk-stat-icon {
+    font-size: 32px;
+    margin-bottom: 5px;
+    display: block;
+}
+
+.yyk-stat-label {
+    font-size: 14px;
+    opacity: 0.9;
+    text-align: center;
+}
+
+/* ===== 归档页布局控制 ===== */
+/* 桌面端：隐藏列表，显示网格 */
+.yyk-archive-app-list {
+    display: none !important;
+}
+
+.yyk-archive-app-grid {
+    display: grid !important;
+    grid-template-columns: repeat(2, 1fr) !important;
+    gap: 10px !important;
+    margin-bottom: 10px !important;
+}
+
+/* 手机端：隐藏网格，显示列表 */
+@media (max-width: 576px) {
+    .yyk-archive-app-grid {
+        display: none !important;
+    }
+    
+    .yyk-archive-app-list {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 10px !important;
+        margin-bottom: 20px !important;
+    }
+    
+    /* 手机端归档页列表样式 */
+    .yyk-archive-app-list .yyk-list-item {
+        display: flex !important;
+        align-items: flex-start !important;
+        gap: 12px !important;
+        padding: 12px !important;
+        background: #fff !important;
+        border-radius: 8px !important;
+        margin-bottom: 0 !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+        transition: all 0.3s ease !important;
+    }
+    
+    .yyk-archive-app-list .yyk-list-icon {
+        width: 64px !important;
+        height: 64px !important;
+        flex-shrink: 0 !important;
+        border-radius: 12px !important;
+        overflow: hidden !important;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1) !important;
+    }
+    
+    .yyk-archive-app-list .yyk-list-icon img {
+        width: 100% !important;
+        height: 100% !important;
+        object-fit: contain !important;  /* 改为contain，确保图标完整显示不变形 */
+        background: #f8f9fa !important;  /* 添加浅灰色背景 */
+    }
+    
+    .yyk-archive-app-list .yyk-list-content {
+        flex: 1 !important;
+        min-width: 0 !important;
+    }
+    
+    .yyk-archive-app-list .yyk-list-title {
+        font-size: 15px !important;
+        font-weight: 600 !important;
+        color: #333 !important;
+        margin: 0 0 8px 0 !important;
+        line-height: 1.3 !important;
+        display: -webkit-box !important;
+        -webkit-line-clamp: 1 !important;
+        -webkit-box-orient: vertical !important;
+        overflow: hidden !important;
+    }
+    
+    .yyk-archive-app-list .yyk-list-meta {
+        display: flex !important;
+        flex-wrap: wrap !important;
+        gap: 8px !important;
+        font-size: 11px !important;
+        color: #999 !important;
+    }
+    
+    .yyk-archive-app-list .yyk-list-actions {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 8px !important;
+        flex-shrink: 0 !important;
+    }
+    
+    .yyk-archive-app-list .yyk-list-download {
+        display: inline-block !important;
+        padding: 6px 16px !important;
+        background: linear-gradient(135deg, #0073aa 0%, #00a0d2 100%) !important;
+        color: #fff !important;
+        font-size: 12px !important;
+        font-weight: 500 !important;
+        text-decoration: none !important;
+        border-radius: 20px !important;
+        transition: all 0.3s ease !important;
+        box-shadow: 0 2px 8px rgba(0, 115, 170, 0.3) !important;
+    }
+    
+    .yyk-archive-app-list .yyk-list-download:hover {
+        background: linear-gradient(135deg, #005a87 0%, #0073aa 100%) !important;
+        transform: translateY(-1px) !important;
+        box-shadow: 0 4px 12px rgba(0, 115, 170, 0.4) !important;
+    }
+}
+
+/* 无结果提示样式 */
+.yyk-no-results-message {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 10px 10px;
+    background: #f8f9fa;
+    border-radius: 12px;
+    border: 2px dashed #e8e8e8;
+    margin: 20px 0;
+}
+
+.yyk-no-results-message p {
+    margin: 10px 0;
+    color: #666;
+    font-size: 16px;
+}
+
+.yyk-no-results-message strong {
+    color: #e74c3c;
+}
+
+.yyk-no-results-message .yyk-clear-search {
+    color: #0073aa;
+    text-decoration: none;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.yyk-no-results-message .yyk-clear-search:hover {
+    text-decoration: underline;
+}
+
+/* ===== 热门应用样式 ===== */
+.yyk-hot-apps {
+    margin-top: 25px;
+    padding-top: 25px;
+    border-top: 2px solid #f0f0f0;
+}
+
+.yyk-hot-apps-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.yyk-hot-apps-header h3 {
+    font-size: 16px;
+    color: #333;
+    margin: 0;
+    font-weight: 600;
+}
+
+.yyk-view-more {
+    font-size: 13px;
+    color: #0073aa;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.yyk-view-more:hover {
+    text-decoration: underline;
+}
+
+.yyk-hot-apps-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.yyk-hot-app-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 12px;
+    border-radius: 8px;
+    background: #f8f9fa;
+    transition: all 0.3s ease;
+    border: 1px solid #e9ecef;
+}
+
+.yyk-hot-app-item:hover {
+    background: white;
+    border-color: #0073aa;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+}
+
+.yyk-hot-app-left {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    flex: 1;
+    min-width: 0;
+}
+
+.yyk-hot-app-icon {
+    flex: 0 0 80px;
+    width: 80px;
+    height: 80px;
+    border-radius: 10px;
+    overflow: hidden;
+    background: white;
+    border: 1px solid #e8e8e8;
+}
+
+.yyk-hot-app-icon img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.yyk-hot-app-info {
+    flex: 1;
+    min-width: 0;
+}
+
+.yyk-hot-app-title {
+    margin: 0 0 4px 0;
+    font-size: 14px;
+    line-height: 1.3;
+}
+
+.yyk-hot-app-title a {
+    color: #333;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.yyk-hot-app-title a:hover {
+    color: #0073aa;
+}
+
+.yyk-hot-app-excerpt {
+    margin: 0;
+    font-size: 12px;
+    color: #666;
+    line-height: 1.4;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+}
+
+/* 热门应用下载按钮样式 */
+.yyk-hot-app-download,
+.yyk-hot-app-detail {
+    flex: 0 0 auto;
+}
+
+.yyk-download-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    background: #0073aa;
+    color: white;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    border: 1px solid #0073aa;
+}
+
+.yyk-download-btn:hover {
+    background: #005a87;
+    border-color: #005a87;
+    color: white;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 115, 170, 0.3);
+}
+
+.yyk-download-btn svg {
+    width: 14px;
+    height: 14px;
+}
+
+.yyk-detail-btn {
+    display: inline-flex;
+    align-items: center;
+    padding: 6px 12px;
+    background: #f0f0f0;
+    color: #666;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 12px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+    border: 1px solid #ddd;
+}
+
+.yyk-detail-btn:hover {
+    background: #e5e5e5;
+    color: #333;
+}
+
+/* ===== 数字分页样式 ===== */
+.yyk-pagination {
+    margin-top: 40px;
+    text-align: center;
+}
+
+.yyk-pagination ul {
+    display: inline-flex;
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.yyk-pagination li {
+    margin: 0;
+}
+
+.yyk-pagination a,
+.yyk-pagination span {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 42px;
+    height: 42px;
+    padding: 0 8px;
+    border-radius: 8px;
+    background: #f5f7fa;
+    color: #555;
+    text-decoration: none;
+    font-weight: 500;
+    border: 2px solid transparent;
+    transition: all 0.3s ease;
+    font-size: 14px;
+}
+
+.yyk-pagination a:hover {
+    background: #0073aa;
+    color: white;
+    border-color: #0073aa;
+    transform: translateY(-2px);
+}
+
+.yyk-pagination span.current {
+    background: #0073aa;
+    color: white;
+    border-color: #0073aa;
+    box-shadow: 0 4px 12px rgba(0, 115, 170, 0.3);
+}
+
+.yyk-pagination .page-numbers.dots {
+    background: transparent;
+    border: none;
+    color: #999;
+    min-width: auto;
+}
+
+/* 归档内容布局 */
+.yyk-archive-content {
+    display: grid;
+    grid-template-columns: 320px 1fr;
+    gap: 40px;
+}
+
+.yyk-archive-sidebar {
+    background: white;
+    border-radius: 12px;
+    padding: 25px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    border: 1px solid #e8e8e8;
+    height: fit-content;
+    position: sticky;
+    top: 20px;
+}
+
+.yyk-archive-main {
+    background: white;
+    border-radius: 12px;
+    padding: 30px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    border: 1px solid #e8e8e8;
+}
+
+/* ===== 响应式设计 ===== */
+@media (max-width: 1100px) {
+    .yyk-archive-content {
+        grid-template-columns: 280px 1fr;
+        gap: 30px;
+    }
+    
+    #yyk-archive-app-grid {
+        gap: 20px !important;
+    }
+}
+
+@media (max-width: 992px) {
+    .yyk-archive-content {
+        grid-template-columns: 1fr;
+        gap: 30px;
+    }
+    
+    .yyk-archive-sidebar {
+        position: static;
+    }
+}
+
+@media (max-width: 768px) {
+    .yyk-archive-container {
+        padding: 15px;
+        margin: 15px auto;
+    }
+    
+    #yyk-archive-app-grid {
+        grid-template-columns: 1fr !important;
+        gap: 15px !important;
+    }
+    
+    .yyk-category-header-section {
+        min-height: 250px;
+        margin-bottom: 25px;
+        border-radius: 15px;
+    }
+    
+    .yyk-header-content {
+        padding: 30px 20px;
+    }
+    
+    .yyk-category-title {
+        font-size: 32px;
+    }
+    
+    .yyk-category-description {
+        font-size: 16px;
+    }
+    
+    .yyk-search-box {
+        flex-direction: row;
+    }
+    
+    #yyk-realtime-search {
+        padding: 12px 20px;
+        font-size: 15px;
+    }
+    
+    .yyk-search-submit {
+        width: 46px;
+        height: 46px;
+    }
+    
+    .yyk-pagination ul {
+        gap: 5px;
+    }
+    
+    .yyk-pagination a,
+    .yyk-pagination span {
+        min-width: 38px;
+        height: 38px;
+        font-size: 13px;
+    }
+    
+    /* 热门应用响应式 */
+    .yyk-hot-app-item {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+    }
+    
+    .yyk-hot-app-left {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .yyk-hot-app-icon {
+        margin: 0 auto;
+    }
+    
+    .yyk-hot-app-download,
+    .yyk-hot-app-detail {
+        text-align: center;
+    }
+    
+    .yyk-download-btn,
+    .yyk-detail-btn {
+        width: 100%;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 576px) {
+    .yyk-category-header-section {
+        min-height: 220px;
+    }
+    
+    .yyk-category-title {
+        font-size: 28px;
+    }
+    
+    .yyk-category-stats {
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .yyk-stat-item {
+        min-width: auto;
+        padding: 12px 20px;
+    }
+}
+
+/* ===== VIP等级表样式 ===== */
+.yyk-benefit-vip-table h3::before {
+    content: '📊';
+}
+
+.yyk-vip-table-wrapper {
+    overflow-x: auto;
+    margin-top: 15px;
+}
+
+.yyk-vip-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+
+.yyk-vip-table thead {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+.yyk-vip-table th {
+    padding: 16px 20px;
+    text-align: center;
+    color: white;
+    font-size: 16px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.yyk-vip-table tbody tr {
+    transition: all 0.3s ease;
+    border-bottom: 1px solid #f0f0f0;
+}
+
+.yyk-vip-table tbody tr:last-child {
+    border-bottom: none;
+}
+
+.yyk-vip-table tbody tr:hover {
+    background: linear-gradient(135deg, rgba(102, 126, 234, 0.05) 0%, rgba(118, 75, 162, 0.05) 100%);
+    transform: scale(1.01);
+}
+
+.yyk-vip-table td {
+    padding: 14px 20px;
+    text-align: center;
+    font-size: 15px;
+    color: #333;
+    font-weight: 500;
+}
+
+.yyk-vip-table td:first-child {
+    font-weight: 700;
+    color: #667eea;
+    font-size: 16px;
+}
+
+.yyk-vip-table td:last-child {
+    color: #e74c3c;
+    font-weight: 700;
+}
+
+/* VIP等级表响应式设计 */
+@media (max-width: 768px) {
+    .yyk-vip-table th,
+    .yyk-vip-table td {
+        padding: 10px 12px;
+        font-size: 13px;
+    }
+    
+    .yyk-vip-table td:first-child {
+        font-size: 14px;
+    }
+}

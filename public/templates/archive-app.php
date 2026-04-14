@@ -329,7 +329,93 @@ $total_apps = $app_query->found_posts;
         
         <!-- 主内容区域 -->
         <div class="yyk-archive-main yyk-app-archive-main">
-            <!-- 应用网格容器 - 两列布局 -->
+            <!-- 应用列表容器 - 手机端显示 -->
+            <div id="yyk-archive-app-list" class="yyk-archive-app-list">
+                <?php if ($app_query->have_posts()): ?>
+                    <?php while ($app_query->have_posts()): $app_query->the_post(); ?>
+                        <?php
+                        $post_id = get_the_ID();
+                        $post = get_post($post_id);
+                        
+                        // 获取应用图标
+                        $app_icon_id = get_post_meta($post_id, '_yyk_app_icon_id', true);
+                        $icon_url = '';
+                        if ($app_icon_id) {
+                            $icon_url = wp_get_attachment_image_url($app_icon_id, 'full');
+                        }
+                        if (!$icon_url) {
+                            $icon_url = get_post_meta($post_id, '_yyk_app_icon_url', true);
+                        }
+                        if (!$icon_url) {
+                            $icon_url = plugins_url('../../assets/images/default-icon.png', __FILE__);
+                        }
+                        
+                        $version = get_post_meta($post_id, '_yyk_app_version', true);
+                        $size = get_post_meta($post_id, '_yyk_app_size', true);
+                        $is_hot = get_post_meta($post_id, '_yyk_app_is_hot', true);
+                        $is_recommend = get_post_meta($post_id, '_yyk_app_is_recommend', true);
+                        $download_url = get_post_meta($post_id, '_yyk_app_download_url', true);
+                        ?>
+                        <div class="yyk-list-item">
+                            <div class="yyk-list-icon">
+                                <a href="<?php echo get_permalink($post_id); ?>">
+                                    <img src="<?php echo esc_url($icon_url); ?>" 
+                                         alt="<?php echo esc_attr($post->post_title); ?>">
+                                </a>
+                            </div>
+                            
+                            <div class="yyk-list-content">
+                                <h4 class="yyk-list-title">
+                                    <a href="<?php echo get_permalink($post_id); ?>"><?php echo esc_html($post->post_title); ?></a>
+                                </h4>
+                                
+                                <div class="yyk-list-meta">
+                                    <?php if ($version): ?>
+                                        <span class="yyk-list-version">v<?php echo esc_html($version); ?></span>
+                                    <?php endif; ?>
+                                    
+                                    <?php if ($size): ?>
+                                        <span class="yyk-list-size"><?php echo esc_html($size); ?></span>
+                                    <?php endif; ?>
+                                </div>
+                            </div>
+                            
+                            <div class="yyk-list-badges">
+                                <?php if ($is_hot): ?>
+                                    <span class="yyk-badge yyk-hot">热</span>
+                                <?php endif; ?>
+                                <?php if ($is_recommend): ?>
+                                    <span class="yyk-badge yyk-recommend">荐</span>
+                                <?php endif; ?>
+                            </div>
+                            
+                            <?php if ($download_url): ?>
+                                <div class="yyk-list-actions">
+                                    <a href="<?php echo esc_url($download_url); ?>" 
+                                       class="yyk-list-download" 
+                                       target="_blank" 
+                                       rel="nofollow">
+                                        下载
+                                    </a>
+                                </div>
+                            <?php endif; ?>
+                        </div>
+                    <?php endwhile; ?>
+                    <?php wp_reset_postdata(); ?>
+                <?php else: ?>
+                    <div class="yyk-no-apps">
+                        <h3><?php _e('暂无应用', 'yyk-app-download'); ?></h3>
+                        <p><?php _e('当前没有找到应用，请稍后再来查看。', 'yyk-app-download'); ?></p>
+                    </div>
+                <?php endif; ?>
+            </div>
+            
+            <?php 
+            // 重置查询指针，用于第二次循环
+            $app_query->rewind_posts(); 
+            ?>
+            
+            <!-- 应用网格容器 - 两列布局 - 桌面端显示 -->
             <div id="yyk-archive-app-grid" class="yyk-archive-app-grid">
                 <?php if ($app_query->have_posts()): ?>
                     <?php while ($app_query->have_posts()): $app_query->the_post(); ?>
@@ -367,783 +453,5 @@ $total_apps = $app_query->found_posts;
         </div>
     </div>
 </div>
-
-<style>
-/* ===== 归档页核心样式 ===== */
-.yyk-archive-container {
-    max-width: 1200px;
-    margin: 30px auto;
-    padding: 20px;
-}
-
-/* 搜索框样式 */
-.yyk-archive-search-section {
-    margin-bottom: 30px;
-}
-
-.yyk-search-container {
-    position: relative;
-    max-width: 800px;
-    margin: 0 auto;
-}
-
-.yyk-search-box {
-    display: flex;
-    align-items: center;
-    background: white;
-    border-radius: 50px;
-    padding: 5px;
-    box-shadow: 0 6px 20px rgba(0,0,0,0.1);
-    border: 2px solid #e8e8e8;
-    transition: all 0.3s ease;
-    margin-bottom: 15px;
-}
-
-.yyk-search-box:focus-within {
-    border-color: #0073aa;
-    box-shadow: 0 8px 25px rgba(0, 115, 170, 0.2);
-}
-
-#yyk-realtime-search {
-    flex: 1;
-    border: none;
-    padding: 15px 25px;
-    font-size: 16px;
-    background: transparent;
-    outline: none;
-    color: #333;
-    transition: all 0.3s ease;
-}
-
-#yyk-realtime-search::placeholder {
-    color: #999;
-}
-
-#yyk-realtime-search:focus {
-    border-color: #0073aa;
-    box-shadow: 0 0 0 3px rgba(0, 115, 170, 0.1);
-}
-
-.yyk-search-submit {
-    background: #0073aa;
-    color: white;
-    border: none;
-    border-radius: 50%;
-    width: 50px;
-    height: 50px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    transition: all 0.3s ease;
-    margin-right: 5px;
-}
-
-.yyk-search-submit:hover {
-    background: #005a87;
-    transform: scale(1.05);
-}
-
-.yyk-search-submit svg {
-    width: 20px;
-    height: 20px;
-    stroke-width: 2.5;
-}
-
-.yyk-search-info {
-    text-align: center;
-    color: #666;
-    font-size: 14px;
-    padding: 10px 15px;
-    background: #f8f9fa;
-    border-radius: 8px;
-}
-
-.yyk-search-info .yyk-count {
-    color: #0073aa;
-    font-weight: 600;
-    font-size: 16px;
-}
-
-.yyk-search-keyword {
-    margin-left: 15px;
-    color: #e74c3c;
-    font-weight: 500;
-}
-
-/* 分类标题样式 */
-.yyk-category-header-section {
-    position: relative;
-    border-radius: 20px;
-    margin-bottom: 30px;
-    overflow: hidden;
-    background-size: cover;
-    background-position: center center;
-    background-repeat: no-repeat;
-    min-height: 300px;
-    display: flex;
-    align-items: center;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-}
-
-.yyk-header-overlay {
-    position: absolute;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background: linear-gradient(135deg, 
-                rgba(0, 0, 0, 0.7) 0%,
-                rgba(0, 0, 0, 0.5) 50%,
-                rgba(0, 0, 0, 0.3) 100%);
-    z-index: 1;
-}
-
-.yyk-header-content {
-    position: relative;
-    z-index: 2;
-    color: white;
-    padding: 40px;
-    width: 100%;
-}
-
-.yyk-category-badge,
-.yyk-all-apps-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    background: rgba(255, 255, 255, 0.15);
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    padding: 8px 16px;
-    border-radius: 20px;
-    font-size: 14px;
-    font-weight: 500;
-    margin-bottom: 20px;
-}
-
-.yyk-category-title {
-    font-size: 48px;
-    font-weight: 800;
-    line-height: 1.2;
-    margin: 0 0 20px 0;
-    text-shadow: 0 2px 10px rgba(0, 0, 0, 0.5);
-    letter-spacing: -0.5px;
-}
-
-.yyk-category-description {
-    font-size: 18px;
-    line-height: 1.6;
-    margin-bottom: 30px;
-    max-width: 600px;
-    opacity: 0.9;
-}
-
-.yyk-category-description strong {
-    color: #00d4ff;
-    font-weight: 600;
-}
-
-.yyk-category-stats {
-    display: flex;
-    gap: 30px;
-    flex-wrap: wrap;
-}
-
-.yyk-stat-item {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    padding: 15px 25px;
-    background: rgba(255, 255, 255, 0.1);
-    backdrop-filter: blur(10px);
-    border-radius: 15px;
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    transition: all 0.3s ease;
-    min-width: 120px;
-}
-
-.yyk-stat-item:hover {
-    background: rgba(255, 255, 255, 0.2);
-    transform: translateY(-5px);
-}
-
-.yyk-stat-number {
-    font-size: 36px;
-    font-weight: 800;
-    line-height: 1;
-    margin-bottom: 5px;
-    background: linear-gradient(45deg, #00d4ff, #0073aa);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    background-clip: text;
-}
-
-.yyk-stat-icon {
-    font-size: 32px;
-    margin-bottom: 5px;
-    display: block;
-}
-
-.yyk-stat-label {
-    font-size: 14px;
-    opacity: 0.9;
-    text-align: center;
-}
-
-/* ===== 应用网格布局 - 两列 ===== */
-#yyk-archive-app-grid {
-    display: grid !important;
-    grid-template-columns: repeat(1, 1fr) !important;
-    gap: 10px !important;
-    margin-bottom: 10px !important;
-}
-
-/* 无结果提示样式 */
-.yyk-no-results-message {
-    grid-column: 1 / -1;
-    text-align: center;
-    padding: 10px 10px;
-    background: #f8f9fa;
-    border-radius: 12px;
-    border: 2px dashed #e8e8e8;
-    margin: 20px 0;
-}
-
-.yyk-no-results-message p {
-    margin: 10px 0;
-    color: #666;
-    font-size: 16px;
-}
-
-.yyk-no-results-message strong {
-    color: #e74c3c;
-}
-
-.yyk-no-results-message .yyk-clear-search {
-    color: #0073aa;
-    text-decoration: none;
-    font-weight: 500;
-    cursor: pointer;
-}
-
-.yyk-no-results-message .yyk-clear-search:hover {
-    text-decoration: underline;
-}
-
-/* ===== 热门应用样式 ===== */
-.yyk-hot-apps {
-    margin-top: 25px;
-    padding-top: 25px;
-    border-top: 2px solid #f0f0f0;
-}
-
-.yyk-hot-apps-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 15px;
-}
-
-.yyk-hot-apps-header h3 {
-    font-size: 16px;
-    color: #333;
-    margin: 0;
-    font-weight: 600;
-}
-
-.yyk-view-more {
-    font-size: 13px;
-    color: #0073aa;
-    text-decoration: none;
-    font-weight: 500;
-}
-
-.yyk-view-more:hover {
-    text-decoration: underline;
-}
-
-.yyk-hot-apps-list {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-}
-
-.yyk-hot-app-item {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    padding: 12px;
-    border-radius: 8px;
-    background: #f8f9fa;
-    transition: all 0.3s ease;
-    border: 1px solid #e9ecef;
-}
-
-.yyk-hot-app-item:hover {
-    background: white;
-    border-color: #0073aa;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-}
-
-.yyk-hot-app-left {
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
-    flex: 1;
-    min-width: 0;
-}
-
-.yyk-hot-app-icon {
-    flex: 0 0 80px;
-    width: 80px;
-    height: 80px;
-    border-radius: 10px;
-    overflow: hidden;
-    background: white;
-    border: 1px solid #e8e8e8;
-}
-
-.yyk-hot-app-icon img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-}
-
-.yyk-hot-app-info {
-    flex: 1;
-    min-width: 0;
-}
-
-.yyk-hot-app-title {
-    margin: 0 0 4px 0;
-    font-size: 14px;
-    line-height: 1.3;
-}
-
-.yyk-hot-app-title a {
-    color: #333;
-    text-decoration: none;
-    font-weight: 500;
-}
-
-.yyk-hot-app-title a:hover {
-    color: #0073aa;
-}
-
-.yyk-hot-app-excerpt {
-    margin: 0;
-    font-size: 12px;
-    color: #666;
-    line-height: 1.4;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-}
-
-/* 热门应用下载按钮样式 */
-.yyk-hot-app-download,
-.yyk-hot-app-detail {
-    flex: 0 0 auto;
-}
-
-.yyk-download-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 12px;
-    background: #0073aa;
-    color: white;
-    border-radius: 6px;
-    text-decoration: none;
-    font-size: 12px;
-    font-weight: 500;
-    transition: all 0.3s ease;
-    white-space: nowrap;
-    border: 1px solid #0073aa;
-}
-
-.yyk-download-btn:hover {
-    background: #005a87;
-    border-color: #005a87;
-    color: white;
-    transform: translateY(-2px);
-    box-shadow: 0 4px 8px rgba(0, 115, 170, 0.3);
-}
-
-.yyk-download-btn svg {
-    width: 14px;
-    height: 14px;
-}
-
-.yyk-detail-btn {
-    display: inline-flex;
-    align-items: center;
-    padding: 6px 12px;
-    background: #f0f0f0;
-    color: #666;
-    border-radius: 6px;
-    text-decoration: none;
-    font-size: 12px;
-    font-weight: 500;
-    transition: all 0.3s ease;
-    white-space: nowrap;
-    border: 1px solid #ddd;
-}
-
-.yyk-detail-btn:hover {
-    background: #e5e5e5;
-    color: #333;
-}
-
-/* ===== 数字分页样式 ===== */
-.yyk-pagination {
-    margin-top: 40px;
-    text-align: center;
-}
-
-.yyk-pagination ul {
-    display: inline-flex;
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    gap: 8px;
-    flex-wrap: wrap;
-    justify-content: center;
-}
-
-.yyk-pagination li {
-    margin: 0;
-}
-
-.yyk-pagination a,
-.yyk-pagination span {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-width: 42px;
-    height: 42px;
-    padding: 0 8px;
-    border-radius: 8px;
-    background: #f5f7fa;
-    color: #555;
-    text-decoration: none;
-    font-weight: 500;
-    border: 2px solid transparent;
-    transition: all 0.3s ease;
-    font-size: 14px;
-}
-
-.yyk-pagination a:hover {
-    background: #0073aa;
-    color: white;
-    border-color: #0073aa;
-    transform: translateY(-2px);
-}
-
-.yyk-pagination span.current {
-    background: #0073aa;
-    color: white;
-    border-color: #0073aa;
-    box-shadow: 0 4px 12px rgba(0, 115, 170, 0.3);
-}
-
-.yyk-pagination .page-numbers.dots {
-    background: transparent;
-    border: none;
-    color: #999;
-    min-width: auto;
-}
-
-/* 归档内容布局 */
-.yyk-archive-content {
-    display: grid;
-    grid-template-columns: 320px 1fr;
-    gap: 40px;
-}
-
-.yyk-archive-sidebar {
-    background: white;
-    border-radius: 12px;
-    padding: 25px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-    border: 1px solid #e8e8e8;
-    height: fit-content;
-    position: sticky;
-    top: 20px;
-}
-
-.yyk-archive-main {
-    background: white;
-    border-radius: 12px;
-    padding: 30px;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-    border: 1px solid #e8e8e8;
-}
-
-/* ===== 响应式设计 ===== */
-@media (max-width: 1100px) {
-    .yyk-archive-content {
-        grid-template-columns: 280px 1fr;
-        gap: 30px;
-    }
-    
-    #yyk-archive-app-grid {
-        gap: 20px !important;
-    }
-}
-
-@media (max-width: 992px) {
-    .yyk-archive-content {
-        grid-template-columns: 1fr;
-        gap: 30px;
-    }
-    
-    .yyk-archive-sidebar {
-        position: static;
-    }
-}
-
-@media (max-width: 768px) {
-    .yyk-archive-container {
-        padding: 15px;
-        margin: 15px auto;
-    }
-    
-    #yyk-archive-app-grid {
-        grid-template-columns: 1fr !important;
-        gap: 15px !important;
-    }
-    
-    .yyk-category-header-section {
-        min-height: 250px;
-        margin-bottom: 25px;
-        border-radius: 15px;
-    }
-    
-    .yyk-header-content {
-        padding: 30px 20px;
-    }
-    
-    .yyk-category-title {
-        font-size: 32px;
-    }
-    
-    .yyk-category-description {
-        font-size: 16px;
-    }
-    
-    .yyk-search-box {
-        flex-direction: row;
-    }
-    
-    #yyk-realtime-search {
-        padding: 12px 20px;
-        font-size: 15px;
-    }
-    
-    .yyk-search-submit {
-        width: 46px;
-        height: 46px;
-    }
-    
-    .yyk-pagination ul {
-        gap: 5px;
-    }
-    
-    .yyk-pagination a,
-    .yyk-pagination span {
-        min-width: 38px;
-        height: 38px;
-        font-size: 13px;
-    }
-    
-    /* 热门应用响应式 */
-    .yyk-hot-app-item {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 10px;
-    }
-    
-    .yyk-hot-app-left {
-        flex-direction: column;
-        text-align: center;
-    }
-    
-    .yyk-hot-app-icon {
-        margin: 0 auto;
-    }
-    
-    .yyk-hot-app-download,
-    .yyk-hot-app-detail {
-        text-align: center;
-    }
-    
-    .yyk-download-btn,
-    .yyk-detail-btn {
-        width: 100%;
-        justify-content: center;
-    }
-}
-
-@media (max-width: 576px) {
-    .yyk-category-header-section {
-        min-height: 220px;
-    }
-    
-    .yyk-category-title {
-        font-size: 28px;
-    }
-    
-    .yyk-category-stats {
-        flex-direction: column;
-        gap: 15px;
-    }
-    
-    .yyk-stat-item {
-        min-width: auto;
-        padding: 12px 20px;
-    }
-}
-</style>
-
-<script>
-// ===== 实时搜索筛选功能 =====
-document.addEventListener('DOMContentLoaded', function() {
-    const searchInput = document.getElementById('yyk-realtime-search');
-    const appGrid = document.getElementById('yyk-archive-app-grid');
-    
-    if (!searchInput || !appGrid) return;
-    
-    // 获取所有应用卡片
-    const appCards = appGrid.querySelectorAll('.yyk-template-card');
-    
-    // 实时输入监听
-    searchInput.addEventListener('input', function() {
-        const searchTerm = this.value.toLowerCase().trim();
-        
-        if (searchTerm) {
-            filterApps(searchTerm);
-        } else {
-            showAllApps();
-        }
-    });
-    
-    // 搜索按钮点击事件
-    const searchBtn = document.querySelector('.yyk-search-submit');
-    if (searchBtn) {
-        searchBtn.addEventListener('click', function() {
-            const searchTerm = searchInput.value.toLowerCase().trim();
-            if (searchTerm) {
-                filterApps(searchTerm);
-            }
-        });
-    }
-    
-    // 筛选函数
-    function filterApps(searchTerm) {
-        let hasVisibleResults = false;
-        let visibleCount = 0;
-        
-        appCards.forEach(card => {
-            // 获取应用标题
-            const titleElement = card.querySelector('.yyk-card-title');
-            let appTitle = '';
-            
-            if (titleElement) {
-                const titleLink = titleElement.querySelector('a');
-                appTitle = titleLink ? titleLink.textContent : titleElement.textContent;
-            }
-            
-            // 检查是否匹配
-            const isVisible = appTitle.toLowerCase().includes(searchTerm);
-            
-            // 显示/隐藏卡片
-            if (isVisible) {
-                card.style.display = 'flex';
-                hasVisibleResults = true;
-                visibleCount++;
-            } else {
-                card.style.display = 'none';
-            }
-        });
-        
-        // 更新搜索结果信息
-        updateSearchInfo(searchTerm, visibleCount);
-        
-        // 显示无结果提示
-        showNoResultsMessage(hasVisibleResults, searchTerm);
-    }
-    
-    // 显示所有应用
-    function showAllApps() {
-        let totalCount = 0;
-        
-        appCards.forEach(card => {
-            card.style.display = 'flex';
-            totalCount++;
-        });
-        
-        // 恢复原始计数
-        updateSearchInfo('', totalCount);
-        
-        // 移除无结果提示
-        removeNoResultsMessage();
-    }
-    
-    // 更新搜索信息
-    function updateSearchInfo(searchTerm, count) {
-        const searchInfo = document.querySelector('.yyk-search-info');
-        if (searchInfo) {
-            if (searchTerm) {
-                searchInfo.innerHTML = `找到 <span class="yyk-count">${count}</span> 个匹配 "<strong>${searchTerm}</strong>" 的应用`;
-            } else {
-                const totalApps = <?php echo $total_apps; ?>;
-                searchInfo.innerHTML = `共 <span class="yyk-count">${totalApps}</span> 个应用`;
-            }
-        }
-    }
-    
-    // 显示无结果提示
-    function showNoResultsMessage(hasResults, searchTerm) {
-        removeNoResultsMessage();
-        
-        if (!hasResults && searchTerm) {
-            const noResultsMsg = document.createElement('div');
-            noResultsMsg.className = 'yyk-no-results-message';
-            noResultsMsg.innerHTML = `
-                <p>没有找到包含 "<strong>${searchTerm}</strong>" 的应用</p>
-                <p>请尝试其他关键词，或<a href="javascript:void(0)" class="yyk-clear-search">清空搜索</a>查看所有应用</p>
-            `;
-            
-            appGrid.appendChild(noResultsMsg);
-            
-            // 清空搜索功能
-            const clearBtn = noResultsMsg.querySelector('.yyk-clear-search');
-            if (clearBtn) {
-                clearBtn.addEventListener('click', function() {
-                    searchInput.value = '';
-                    showAllApps();
-                    searchInput.focus();
-                });
-            }
-        }
-    }
-    
-    // 移除无结果提示
-    function removeNoResultsMessage() {
-        const existingMsg = appGrid.querySelector('.yyk-no-results-message');
-        if (existingMsg) {
-            existingMsg.remove();
-        }
-    }
-    
-    // 页面加载时显示总数
-    updateSearchInfo('', appCards.length);
-});
-</script>
 
 <?php get_footer(); ?>

@@ -35,29 +35,12 @@ $version = isset($version) ? $version : '1.0.0';
         
         <!-- 右侧内容区域 -->
         <div class="yyk-card-content">
-            <!-- 第一行：应用标题 + 热门标签 -->
-            <div class="yyk-card-header">
-                <h3 class="yyk-card-title">
-                    <a href="<?php echo get_permalink($post->ID); ?>"><?php echo esc_html($post->post_title); ?></a>
-                </h3>
-                
-                <!-- 热门标签 -->
-                <div class="yyk-card-badges">
-                    <?php if (!empty($is_hot)): ?>
-                        <span class="yyk-badge yyk-hot"><?php _e('热', 'yyk-app-download'); ?></span>
-                    <?php endif; ?>
-                    
-                    <?php if (!empty($is_recommend)): ?>
-                        <span class="yyk-badge yyk-recommend"><?php _e('荐', 'yyk-app-download'); ?></span>
-                    <?php endif; ?>
-                    
-                    <?php if (!empty($is_new)): ?>
-                        <span class="yyk-badge yyk-new"><?php _e('新', 'yyk-app-download'); ?></span>
-                    <?php endif; ?>
-                </div>
-            </div>
+            <!-- 第一排：标题 -->
+            <h3 class="yyk-card-title">
+                <a href="<?php echo get_permalink($post->ID); ?>"><?php echo esc_html($post->post_title); ?></a>
+            </h3>
             
-            <!-- 第二行：平台类型 -->
+            <!-- 第二排：平台类型 -->
             <div class="yyk-platform-icons">
                 <span class="yyk-platform-icon <?php echo esc_attr($platform); ?>">
                     <?php 
@@ -71,25 +54,27 @@ $version = isset($version) ? $version : '1.0.0';
                 </span>
             </div>
             
-            <!-- 第三行：版本号、文件大小、游戏类型 -->
+            <!-- 第三排：元信息 -->
             <div class="yyk-card-meta">
-                <div class="yyk-meta-item">
-                    <span class="yyk-meta-label"><?php _e('版本', 'yyk-app-download'); ?>:</span>
-                    <span class="yyk-meta-value"><?php echo esc_html($version); ?></span>
-                </div>
-                
-                <div class="yyk-meta-item">
-                    <span class="yyk-meta-label"><?php _e('大小', 'yyk-app-download'); ?>:</span>
-                    <span class="yyk-meta-value"><?php echo esc_html($size); ?></span>
-                </div>
-                
-                <div class="yyk-meta-item">
-                    <span class="yyk-meta-label"><?php _e('类型', 'yyk-app-download'); ?>:</span>
-                    <span class="yyk-meta-value"><?php echo esc_html($game_type); ?></span>
-                </div>
+                <span class="yyk-meta-text"><?php _e('版本', 'yyk-app-download'); ?>: <?php echo esc_html($version); ?> | <?php _e('大小', 'yyk-app-download'); ?>: <?php echo esc_html($size); ?> | <?php _e('类型', 'yyk-app-download'); ?>: <?php echo esc_html($game_type); ?></span>
             </div>
             
-            <!-- 第四行：按钮 -->
+            <!-- 热门标签 -->
+            <div class="yyk-card-badges">
+                <?php if (!empty($is_hot)): ?>
+                    <span class="yyk-badge yyk-hot"><?php _e('热', 'yyk-app-download'); ?></span>
+                <?php endif; ?>
+                
+                <?php if (!empty($is_recommend)): ?>
+                    <span class="yyk-badge yyk-recommend"><?php _e('荐', 'yyk-app-download'); ?></span>
+                <?php endif; ?>
+                
+                <?php if (!empty($is_new)): ?>
+                    <span class="yyk-badge yyk-new"><?php _e('新', 'yyk-app-download'); ?></span>
+                <?php endif; ?>
+            </div>
+            
+            <!-- 按钮（永远在底部） -->
             <div class="yyk-card-actions">
                 <a href="<?php echo get_permalink($post->ID); ?>" class="yyk-card-detail">
                     <?php _e('查看详情', 'yyk-app-download'); ?>

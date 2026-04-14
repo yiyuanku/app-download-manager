@@ -39,15 +39,7 @@ if (!class_exists('YYK_ST_Collector')) {
     }
         
         private function init_settings() {
-            $api_source = get_option('yyk_st_api_source');
-            if ($api_source === false) {
-                $api_source = 'steamsy';
-            }
-            if ($api_source === 'hehesy') {
-                $this->api_domain = 'http://box.hehesy.com';
-            } else {
-                $this->api_domain = 'https://www.steamsy.com';
-            }
+            $this->api_domain = get_option('yyk_st_api_domain', 'https://www.steamsy.com');
             $this->cps_id = get_option('yyk_st_cps_id', '15907108869');
         }
         
@@ -83,7 +75,7 @@ if (!class_exists('YYK_ST_Collector')) {
         
         public function activate() {
             $this->create_table();
-            update_option('yyk_st_api_source', 'steamsy');
+            update_option('yyk_st_api_domain', 'https://www.steamsy.com');
             update_option('yyk_st_cps_id', '15907108869');
         }
         
@@ -178,7 +170,6 @@ if (!class_exists('YYK_ST_Collector')) {
         }
         
         private function api_get($endpoint, $params = []) {
-            $this->init_settings();
             $url = rtrim($this->api_domain, '/') . $endpoint;
             $params['cpsId'] = $this->cps_id;
             $url = add_query_arg($params, $url);
@@ -210,19 +201,10 @@ if (!class_exists('YYK_ST_Collector')) {
         
         private function fix_url($url) {
             if (empty($url)) return '';
-            $api_source = get_option('yyk_st_api_source');
-            if ($api_source === false) {
-                $api_source = 'steamsy';
-            }
-            if ($api_source === 'hehesy') {
-                return $url;
-            } else {
-                $url = str_replace('qudao.guazisy.com', 'qudao.steamsy.com', $url);
-                return $url;
-            }
+            return str_replace('qudao.guazisy.com', 'qudao.steamsy.com', $url);
         }
         
-        // 从接口数据提取字段 - 兼容不同接口的字段格式
+        // 从接口数据提取字段
         private function extract_post_data($item) {
             $post_data = [
                 'post_title' => '',
@@ -236,61 +218,46 @@ if (!class_exists('YYK_ST_Collector')) {
                 'meta_fields' => []
             ];
             
-            // 游戏ID - 兼容 id 或 game_id
-            $game_id = $item['id'] ?? $item['game_id'] ?? '';
+            // 游戏ID
+            $game_id = $item['id'] ?? '';
             
             $this->log('提取游戏数据 - game_id: ' . $game_id . ', 原始数据: ' . json_encode($item, JSON_UNESCAPED_UNICODE));
             
-            // 游戏名称 - 兼容 gamename 或 name
-            $game_name = '';
+            // 游戏名称 (接口返回 gamename)
             if (isset($item['gamename']) && !empty($item['gamename'])) {
-                $game_name = trim($item['gamename']);
-            } elseif (isset($item['name']) && !empty($item['name'])) {
-                $game_name = trim($item['name']);
-            }
-            if (!empty($game_name)) {
-                $post_data['post_title'] = $game_name;
-                $post_data['game_name'] = $game_name;
+                $name = trim($item['gamename']);
+                $post_data['post_title'] = $name;
+                $post_data['game_name'] = $name;
             }
             
-            // 图标 - 兼容 pic1 或 icon
-            $icon_url = '';
+            // 图标 (接口返回 pic1)
             if (isset($item['pic1']) && !empty($item['pic1'])) {
-                $icon_url = $this->fix_url($item['pic1']);
-            } elseif (isset($item['icon']) && !empty($item['icon'])) {
-                $icon_url = $this->fix_url($item['icon']);
-            }
-            if (!empty($icon_url)) {
-                $post_data['game_icon'] = $icon_url;
-                $post_data['meta_fields']['_yyk_app_icon_url'] = $icon_url;
+                $icon = $this->fix_url($item['pic1']);
+                $post_data['game_icon'] = $icon;
+                $post_data['meta_fields']['_yyk_app_icon_url'] = $icon;
             }
             
-            // 下载地址 - 兼容 url 或 Url 或 download_url
-            $download_url = '';
-            if (isset($item['download_url']) && !empty($item['download_url'])) {
-                $download_url = $this->fix_url($item['download_url']);
-            } elseif (isset($item['url']) && !empty($item['url'])) {
-                $download_url = $this->fix_url($item['url']);
-            } elseif (isset($item['Url']) && !empty($item['Url'])) {
-                $download_url = $this->fix_url($item['Url']);
+            // 下载地址 (接口可能返回 url 或 Url)
+            if (isset($item['url']) && !empty($item['url'])) {
+                $url = $this->fix_url($item['url']);
+                $post_data['download_url'] = $url;
+                $post_data['meta_fields']['_yyk_app_download_url'] = $url;
+                $post_data['meta_fields']['_yyk_app_android_url'] = $url;
+                $post_data['meta_fields']['_yyk_app_ios_url'] = $url;
             }
-            if (!empty($download_url)) {
-                $post_data['download_url'] = $download_url;
-                $post_data['meta_fields']['_yyk_app_download_url'] = $download_url;
-                $post_data['meta_fields']['_yyk_app_android_url'] = $download_url;
-                $post_data['meta_fields']['_yyk_app_ios_url'] = $download_url;
+            if (isset($item['Url']) && !empty($item['Url'])) {
+                $url = $this->fix_url($item['Url']);
+                $post_data['download_url'] = $url;
+                $post_data['meta_fields']['_yyk_app_download_url'] = $url;
+                $post_data['meta_fields']['_yyk_app_android_url'] = $url;
+                $post_data['meta_fields']['_yyk_app_ios_url'] = $url;
             }
             
-            // 游戏大小 - 兼容 gamesize 或 size
-            $game_size = '';
+            // 游戏大小 (接口返回 gamesize)
             if (isset($item['gamesize']) && !empty($item['gamesize'])) {
-                $game_size = $item['gamesize'];
-            } elseif (isset($item['size']) && !empty($item['size'])) {
-                $game_size = $item['size'];
-            }
-            if (!empty($game_size)) {
-                $post_data['game_size'] = $game_size;
-                $post_data['meta_fields']['_yyk_app_size'] = $game_size;
+                $size = $item['gamesize'];
+                $post_data['game_size'] = $size;
+                $post_data['meta_fields']['_yyk_app_size'] = $size;
             }
             
             // 平台类型 (接口返回 device_type)
@@ -554,7 +521,6 @@ if (!class_exists('YYK_ST_Collector')) {
             $table_name = YYK_ST_TABLE_GAMES;
             
             $this->log('开始保存游戏 - game_id: ' . $game_id);
-            $this->log('准备保存的数据 - game_name: ' . ($post_data['game_name'] ?? '空') . ', game_icon: ' . ($post_data['game_icon'] ?? '空'));
             
             $exists = $this->db->get_var($this->db->prepare(
                 "SELECT id FROM $table_name WHERE game_id = %s",
@@ -593,19 +559,13 @@ if (!class_exists('YYK_ST_Collector')) {
                 'photo1' => $post_data['meta_fields']['_yyk_st_photo1'] ?? null
             ];
             
-            $this->log('准备插入的数据 - ' . json_encode($insert_data, JSON_UNESCAPED_UNICODE));
-            
             if ($exists) {
                 $this->log('游戏已存在，跳过 - game_id: ' . $game_id);
                 return 'exists';
             } else {
                 $this->log('插入游戏 - game_id: ' . $game_id);
                 $result = $this->db->insert($table_name, $insert_data);
-                if ($result === false) {
-                    $this->log('插入失败 - 错误: ' . $this->db->last_error);
-                } else {
-                    $this->log('插入成功 - 插入ID: ' . $this->db->insert_id);
-                }
+                $this->log('插入结果 - ' . ($result !== false ? '成功' : '失败') . ', 插入ID: ' . $this->db->insert_id);
                 return $result !== false;
             }
         }
@@ -690,12 +650,6 @@ if (!class_exists('YYK_ST_Collector')) {
         public function fetch_games($page = 1, $limit = 20) {
             $this->log('开始采集游戏 - 页码: ' . $page . ', 限制: ' . $limit);
             
-            $api_source = get_option('yyk_st_api_source');
-            if ($api_source === false) {
-                $api_source = 'steamsy';
-            }
-            $this->log('当前数据源: ' . $api_source);
-            
             $result = $this->api_get('/v1/', [
                 'pagecode' => $page,
                 'pagenum' => $limit
@@ -713,49 +667,33 @@ if (!class_exists('YYK_ST_Collector')) {
             
             $this->log('API返回数据 - ' . json_encode($data, JSON_UNESCAPED_UNICODE));
             
-            // 兼容不同接口的返回格式，先检查 lists，再检查 list
-            $game_list = [];
-            if (!empty($data['lists']) && is_array($data['lists'])) {
-                $game_list = $data['lists'];
-            } elseif (!empty($data['list']) && is_array($data['list'])) {
-                $game_list = $data['list'];
-            }
-            
-            // 检查是否有数据
-            if (empty($game_list)) {
+            // 检查是否有 lists 数据
+            if (empty($data['lists']) || !is_array($data['lists'])) {
                 $this->log('没有游戏数据');
                 return ['success' => true, 'saved' => 0, 'failed' => 0, 'total' => 0, 'message' => '没有游戏数据'];
             }
             
-            $this->log('找到 ' . count($game_list) . ' 个游戏');
+            $this->log('找到 ' . count($data['lists']) . ' 个游戏');
             
-            foreach ($game_list as $item) {
+            foreach ($data['lists'] as $item) {
                 try {
-                    $this->log('处理游戏项 - 原始数据: ' . json_encode($item, JSON_UNESCAPED_UNICODE));
-                    
-                    // 兼容不同接口的id字段
-                    $game_id = $item['id'] ?? $item['game_id'] ?? '';
+                    $game_id = $item['id'] ?? '';
                     if (empty($game_id)) {
                         $this->log('游戏ID为空，跳过');
                         $failed++;
                         continue;
                     }
-                    $this->log('游戏ID: ' . $game_id);
                     
                     $post_data = $this->extract_post_data($item);
-                    $this->log('提取后的数据 - post_title: ' . ($post_data['post_title'] ?? '空') . ', game_icon: ' . ($post_data['game_icon'] ?? '空'));
-                    
                     $result = $this->save_game($game_id, $post_data);
                     
                     if ($result === true) {
                         $saved++;
-                        $this->log('保存成功 - game_id: ' . $game_id);
                     } elseif ($result === 'exists') {
                         $skipped++;
                         $this->log('游戏已存在，跳过 - game_id: ' . $game_id);
                     } else {
                         $failed++;
-                        $this->log('保存失败 - game_id: ' . $game_id);
                     }
                     
                 } catch (Exception $e) {
@@ -799,115 +737,31 @@ if (!class_exists('YYK_ST_Collector')) {
             return $result;
         }
         
-        // 采集游戏详情（包含photo五宣图）- 优先V3，V3没有的读V1
+        // 采集游戏详情（包含photo五宣图）
         public function fetch_game_detail($game_id) {
             $this->log('开始采集游戏详情 - game_id: ' . $game_id);
             
-            $game_detail = [];
-            $v1_detail = [];
-            
-            // 先调用V3接口
-            $result_v3 = $this->api_get('/v3/', [
+            $result = $this->api_get('/v3/', [
                 'gid' => $game_id
             ]);
             
-            if ($result_v3['success'] && !empty($result_v3['data']['c'])) {
-                $game_detail = $result_v3['data']['c'];
-                $this->log('获取到V3详情数据');
+            if (!$result['success']) {
+                $this->log('游戏详情API请求失败 - ' . $result['error']);
+                return ['success' => false, 'error' => $result['error']];
             }
             
-            // 检查是否需要调用V1接口补充数据
-            $need_v1 = false;
+            $data = $result['data'];
+            $this->log('游戏详情API返回数据 - ' . json_encode($data, JSON_UNESCAPED_UNICODE));
             
-            // 如果V3没有photo或video，调用V1
-            if (empty($game_detail['photo']) || empty($game_detail['video'])) {
-                $need_v1 = true;
-                $this->log('V3缺少photo或video，调用V1补充');
+            // 检查返回状态
+            if (empty($data['a']) || $data['a'] != 1) {
+                $this->log('游戏详情获取失败 - ' . ($data['b'] ?? '未知错误'));
+                return ['success' => false, 'error' => $data['b'] ?? '未知错误'];
             }
             
-            if ($need_v1) {
-                $result_v1 = $this->api_get('/v1/', [
-                    'gid' => $game_id
-                ]);
-                
-                if ($result_v1['success'] && !empty($result_v1['data']['c'])) {
-                    $v1_detail = $result_v1['data']['c'];
-                    $this->log('获取到V1详情数据');
-                    
-                    // 合并数据 - 优先使用V3的数据，V3没有的用V1补充
-                    if (empty($game_detail['photo']) && !empty($v1_detail['photo'])) {
-                        $game_detail['photo'] = $v1_detail['photo'];
-                        $this->log('使用V1补充photo字段');
-                    }
-                    if (empty($game_detail['video']) && !empty($v1_detail['video'])) {
-                        $game_detail['video'] = $v1_detail['video'];
-                        $this->log('使用V1补充video字段');
-                    }
-                    if (empty($game_detail['game_bbs']) && !empty($v1_detail['game_bbs'])) {
-                        $game_detail['game_bbs'] = $v1_detail['game_bbs'];
-                        $this->log('使用V1补充game_bbs字段');
-                    }
-                    if (empty($game_detail['gamenotice']) && !empty($v1_detail['gamenotice'])) {
-                        $game_detail['gamenotice'] = $v1_detail['gamenotice'];
-                        $this->log('使用V1补充gamenotice字段');
-                    }
-                    if (empty($game_detail['box_content']) && !empty($v1_detail['box_content'])) {
-                        $game_detail['box_content'] = $v1_detail['box_content'];
-                        $this->log('使用V1补充box_content字段');
-                    }
-                    if (empty($game_detail['download_url']) && !empty($v1_detail['download_url'])) {
-                        $game_detail['download_url'] = $v1_detail['download_url'];
-                        $this->log('使用V1补充download_url字段');
-                    }
-                    if (empty($game_detail['url']) && !empty($v1_detail['url'])) {
-                        $game_detail['url'] = $v1_detail['url'];
-                        $this->log('使用V1补充url字段');
-                    }
-                    if (empty($game_detail['downloadnum']) && !empty($v1_detail['downloadnum'])) {
-                        $game_detail['downloadnum'] = $v1_detail['downloadnum'];
-                        $this->log('使用V1补充downloadnum字段');
-                    }
-                    if (empty($game_detail['gamesize']) && !empty($v1_detail['gamesize'])) {
-                        $game_detail['gamesize'] = $v1_detail['gamesize'];
-                        $this->log('使用V1补充gamesize字段');
-                    }
-                    if (empty($game_detail['edition']) && !empty($v1_detail['edition'])) {
-                        $game_detail['edition'] = $v1_detail['edition'];
-                        $this->log('使用V1补充edition字段');
-                    }
-                    if (empty($game_detail['updatetime']) && !empty($v1_detail['updatetime'])) {
-                        $game_detail['updatetime'] = $v1_detail['updatetime'];
-                        $this->log('使用V1补充updatetime字段');
-                    }
-                    if (empty($game_detail['excerpt']) && !empty($v1_detail['excerpt'])) {
-                        $game_detail['excerpt'] = $v1_detail['excerpt'];
-                        $this->log('使用V1补充excerpt字段');
-                    }
-                    if (empty($game_detail['fanli']) && !empty($v1_detail['fanli'])) {
-                        $game_detail['fanli'] = $v1_detail['fanli'];
-                        $this->log('使用V1补充fanli字段');
-                    }
-                    if (empty($game_detail['vip']) && !empty($v1_detail['vip'])) {
-                        $game_detail['vip'] = $v1_detail['vip'];
-                        $this->log('使用V1补充vip字段');
-                    }
-                    if (empty($game_detail['welfare']) && !empty($v1_detail['welfare'])) {
-                        $game_detail['welfare'] = $v1_detail['welfare'];
-                        $this->log('使用V1补充welfare字段');
-                    }
-                    if (empty($game_detail['device_type']) && !empty($v1_detail['device_type'])) {
-                        $game_detail['device_type'] = $v1_detail['device_type'];
-                        $this->log('使用V1补充device_type字段');
-                    }
-                    if (empty($game_detail['discount']) && !empty($v1_detail['discount'])) {
-                        $game_detail['discount'] = $v1_detail['discount'];
-                        $this->log('使用V1补充discount字段');
-                    }
-                }
-            }
-            
+            $game_detail = $data['c'] ?? [];
             if (empty($game_detail)) {
-                $this->log('游戏详情数据为空（V3和V1都没有数据）');
+                $this->log('游戏详情数据为空');
                 return ['success' => false, 'error' => '游戏详情数据为空'];
             }
             
@@ -956,34 +810,10 @@ if (!class_exists('YYK_ST_Collector')) {
                     // 更新其他字段（不使用extract_post_data，直接处理v3字段）
                     $meta_fields = &$post_data['meta_fields'];
                     
-                    // 更新下载地址
-                    $api_source = get_option('yyk_st_api_source');
-                    if ($api_source === false) {
-                        $api_source = 'steamsy';
-                    }
-                    
-                    $download_url = '';
-                    
-                    // 先尝试从接口获取原始下载地址
-                    if (isset($game_detail['download_url']) && !empty($game_detail['download_url'])) {
-                        $download_url = $this->fix_url($game_detail['download_url']);
-                        $this->log('使用接口返回的下载地址 - url: ' . $download_url);
-                    } elseif (isset($game_detail['url']) && !empty($game_detail['url'])) {
-                        $download_url = $this->fix_url($game_detail['url']);
-                        $this->log('使用接口返回的url地址 - url: ' . $download_url);
-                    }
-                    
-                    // 如果是 ST手游 并且接口没有返回下载地址，再用 game_id 构造
-                    if (empty($download_url) && $api_source !== 'hehesy') {
-                        $cps_id = get_option('yyk_st_cps_id', '15907108869');
-                        $download_url = 'https://qudao.steamsy.com/down.html?ag=' . $cps_id . '&gid=' . $game_id;
-                        $this->log('用game_id构造ST手游下载地址 - url: ' . $download_url);
-                    }
-                    
-                    // 如果是梨子手游并且没有获取到地址，尝试用接口返回的url构造
-                    if (empty($download_url) && $api_source === 'hehesy') {
-                        $this->log('梨子手游没有获取到下载地址');
-                    }
+                    // 更新下载地址（直接用 game_id 构造 qudao.steamsy.com 地址）
+                    $cps_id = get_option('yyk_st_cps_id', '15907108869');
+                    $download_url = 'https://qudao.steamsy.com/down.html?ag=' . $cps_id . '&gid=' . $game_id;
+                    $this->log('用game_id构造下载地址 - url: ' . $download_url);
                     
                     if (!empty($download_url)) {
                         $meta_fields['_yyk_app_download_url'] = $download_url;
@@ -1717,12 +1547,12 @@ if (!class_exists('YYK_ST_Collector')) {
         public function render_admin_page() {
             if (isset($_POST['save_settings'])) {
                 check_admin_referer('yyk_st_settings');
-                update_option('yyk_st_api_source', sanitize_text_field($_POST['api_source']));
+                update_option('yyk_st_api_domain', sanitize_text_field($_POST['api_domain']));
                 update_option('yyk_st_cps_id', sanitize_text_field($_POST['cps_id']));
                 echo '<div class="notice notice-success"><p>设置已保存</p></div>';
             }
             
-            $api_source = get_option('yyk_st_api_source', 'steamsy');
+            $api_domain = get_option('yyk_st_api_domain', 'https://www.steamsy.com');
             $cps_id = get_option('yyk_st_cps_id', '15907108869');
             
             $table_name = YYK_ST_TABLE_GAMES;
@@ -1751,18 +1581,13 @@ if (!class_exists('YYK_ST_Collector')) {
                     <form method="post" style="background:#fff;padding:20px;margin-top:20px;border-radius:8px">
                         <?php wp_nonce_field('yyk_st_settings'); ?>
                         <table class="form-table">
-                            <tr><th><label>数据源</label></th>
-                                <td>
-                                    <select name="api_source" class="regular-text">
-                                        <option value="steamsy" <?php selected($api_source, 'steamsy'); ?>>ST手游 (www.steamsy.com)</option>
-                                        <option value="hehesy" <?php selected($api_source, 'hehesy'); ?>>梨子手游 (box.hehesy.com)</option>
-                                    </select><br>
-                                    <span class="description">选择数据源</span>
-                                </th>
+                            <tr><th><label>API域名</label></th>
+                                <td><input type="text" name="api_domain" value="<?php echo esc_attr($api_domain); ?>" class="regular-text"><br>
+                                <span class="description">默认: https://www.steamsy.com</span></th>
                             </tr>
                             <tr><th><label>渠道ID</label></th>
                                 <td><input type="text" name="cps_id" value="<?php echo esc_attr($cps_id); ?>" class="regular-text"><br>
-                                <span class="description">您的渠道账号</span></th>
+                                <span class="description">您的ST手游渠道账号</span></th>
                             </tr>
                         </table>
                         <p class="submit"><button type="submit" name="save_settings" class="button button-primary">保存设置</button></p>

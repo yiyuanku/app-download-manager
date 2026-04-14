@@ -12,23 +12,62 @@ get_header();
 <div class="yyk-single-app-container">
     <div class="yyk-app-header">
         <!-- 应用图标 -->
-        <div class="yyk-app-icon">
-            <?php 
-            // 获取应用图标
-            $app_icon_id = get_post_meta(get_the_ID(), '_yyk_app_icon_id', true);
-            if ($app_icon_id) {
-                echo wp_get_attachment_image($app_icon_id, 'full', false, ['style' => 'width:100%;height:100%;object-fit:contain;padding:15px;box-sizing:border-box;']);
-            } else {
-                // 使用默认图标
+        <div class="yyk-app-icon-wrapper">
+            <div class="yyk-app-icon">
+                <?php 
+                $app_icon_url = get_post_meta(get_the_ID(), '_yyk_app_icon_url', true);
+                $app_icon_id = get_post_meta(get_the_ID(), '_yyk_app_icon_id', true);
                 $default_icon_url = plugins_url('assets/images/default-icon.png', dirname(__FILE__, 2) . '/app-download-manager.php');
-                echo '<img src="' . esc_url($default_icon_url) . '" alt="' . esc_attr(get_the_title()) . '" style="width:100%;height:100%;object-fit:contain;padding:15px;box-sizing:border-box;">';
-            }
+                
+                if (!empty($app_icon_url)) {
+                    echo '<img src="' . esc_url($app_icon_url) . '" alt="' . esc_attr(get_the_title()) . '" style="width:100%;height:100%;object-fit:contain;padding:15px;box-sizing:border-box;">';
+                } elseif ($app_icon_id) {
+                    echo wp_get_attachment_image($app_icon_id, 'full', false, ['style' => 'width:100%;height:100%;object-fit:contain;padding:15px;box-sizing:border-box;']);
+                } else {
+                    echo '<img src="' . esc_url($default_icon_url) . '" alt="' . esc_attr(get_the_title()) . '" style="width:100%;height:100%;object-fit:contain;padding:15px;box-sizing:border-box;">';
+                }
+                ?>
+            </div>
+            <?php
+            $short_intro = get_post_meta(get_the_ID(), '_yyk_st_short_intro', true);
+            if (!empty($short_intro)):
             ?>
+            <p class="yyk-app-short-intro"><?php echo esc_html($short_intro); ?></p>
+            <?php endif; ?>
         </div>
         
         <!-- 应用信息 -->
         <div class="yyk-app-info">
-            <h1 class="yyk-app-title"><?php the_title(); ?></h1>
+            <?php
+            $discount = get_post_meta(get_the_ID(), '_yyk_st_discount', true);
+            $welfare_tags = get_post_meta(get_the_ID(), '_yyk_st_welfare_tags', true);
+            
+            // 处理折扣格式
+            if (is_numeric($discount)) {
+                $discount = $discount . '折';
+            }
+            ?>
+            <div class="yyk-app-title-wrapper">
+                <h1 class="yyk-app-title"><?php the_title(); ?></h1>
+                <?php if (!empty($discount)): ?>
+                    <span class="yyk-tag yyk-tag-discount">折扣: <?php echo esc_html($discount); ?></span>
+                <?php endif; ?>
+            </div>
+            
+            <?php 
+            if (!empty($welfare_tags)):
+                $welfare_tags_array = maybe_unserialize($welfare_tags);
+                if (is_array($welfare_tags_array)):
+            ?>
+                <div class="yyk-app-tags">
+                    <?php foreach ($welfare_tags_array as $tag): ?>
+                        <span class="yyk-tag yyk-tag-fuli"><?php echo esc_html($tag); ?></span>
+                    <?php endforeach; ?>
+                </div>
+            <?php 
+                endif;
+            endif;
+            ?>
             
             <div class="yyk-app-meta">
                 <?php
@@ -37,6 +76,8 @@ get_header();
                 $developer = get_post_meta(get_the_ID(), '_yyk_app_developer', true);
                 $compatibility = get_post_meta(get_the_ID(), '_yyk_app_compatibility', true);
                 $update_date = get_post_meta(get_the_ID(), '_yyk_app_update_date', true);
+                $download_count = get_post_meta(get_the_ID(), '_yyk_app_download_count', true);
+                $platform = get_post_meta(get_the_ID(), '_yyk_app_platform', true);
                 ?>
                 
                 <?php if (!empty($developer)): ?>
@@ -71,6 +112,29 @@ get_header();
                     <div class="yyk-meta-item">
                         <span class="yyk-meta-label"><?php _e('更新日期:', 'yyk-app-download'); ?></span>
                         <span class="yyk-meta-value"><?php echo esc_html($update_date); ?></span>
+                    </div>
+                <?php endif; ?>
+                
+                <?php if (!empty($download_count)): ?>
+                    <div class="yyk-meta-item">
+                        <span class="yyk-meta-label"><?php _e('下载次数:', 'yyk-app-download'); ?></span>
+                        <span class="yyk-meta-value"><?php echo esc_html($download_count); ?></span>
+                    </div>
+                <?php endif; ?>
+                
+                <?php if (!empty($platform)): ?>
+                    <div class="yyk-meta-item">
+                        <span class="yyk-meta-label"><?php _e('平台:', 'yyk-app-download'); ?></span>
+                        <span class="yyk-meta-value yyk-platform-icon <?php echo esc_attr($platform); ?>">
+                            <?php 
+                            switch($platform) {
+                                case 'android': _e('安卓', 'yyk-app-download'); break;
+                                case 'ios': _e('苹果', 'yyk-app-download'); break;
+                                case 'pc': _e('PC', 'yyk-app-download'); break;
+                                default: _e('全平台', 'yyk-app-download');
+                            }
+                            ?>
+                        </span>
                     </div>
                 <?php endif; ?>
             </div>
@@ -124,21 +188,231 @@ get_header();
             </div>
         </div>
         
-        <?php if (!empty($qr_code)): ?>
-            <div class="yyk-qr-code">
-                <img src="<?php echo esc_url($qr_code); ?>" 
-                     alt="<?php _e('下载二维码', 'yyk-app-download'); ?>"
-                     width="150" height="150">
-                <p><?php _e('扫码下载', 'yyk-app-download'); ?></p>
-            </div>
-        <?php endif; ?>
+        <div class="yyk-qr-code">
+            <?php
+            $default_qr_url = content_url('/plugins/app-download-manager/assets/images/st2wm.png');
+            ?>
+            <img src="<?php echo esc_url($default_qr_url); ?>" 
+                 alt="<?php _e('下载二维码', 'yyk-app-download'); ?>"
+                 width="150" height="150">
+            <p><?php _e('扫码下载', 'yyk-app-download'); ?></p>
+        </div>
     </div>
     
     <div class="yyk-app-content">
-        <h2><?php _e('应用介绍', 'yyk-app-download'); ?></h2>
-        <div class="yyk-app-description">
-            <?php the_content(); ?>
+        <?php
+        $excerpt = get_the_excerpt();
+        if (!empty($excerpt)):
+        ?>
+        <div class="yyk-app-excerpt">
+            <div class="yyk-excerpt-icon">✨</div>
+            <div class="yyk-excerpt-content">
+                <h3><?php _e('福利简介', 'yyk-app-download'); ?></h3>
+                <p><?php echo wp_kses_post($excerpt); ?></p>
+            </div>
         </div>
+        <?php endif; ?>
+        
+        <?php
+        $has_description = true;
+        $has_gifts = !empty(get_post_meta(get_the_ID(), '_yyk_st_gifts', true));
+        $fanli = get_post_meta(get_the_ID(), '_yyk_st_fanli', true);
+        $vip_intro = get_post_meta(get_the_ID(), '_yyk_st_vip_intro', true);
+        $has_benefits = !empty($fanli) || !empty($vip_intro);
+        $video = get_post_meta(get_the_ID(), '_yyk_st_video', true);
+        $game_bbs = get_post_meta(get_the_ID(), '_yyk_st_game_bbs', true);
+        if (empty($video) && !empty($game_bbs)) {
+            $video = $game_bbs;
+        }
+        $has_video = !empty($video);
+        $gamenotice = get_post_meta(get_the_ID(), '_yyk_st_gamenotice', true);
+        $has_gamenotice = !empty($gamenotice);
+        ?>
+        
+        <div class="yyk-tabs">
+            <div class="yyk-tabs-nav">
+                <button class="yyk-tab-btn active" data-tab="description">
+                    <?php _e('应用介绍', 'yyk-app-download'); ?>
+                </button>
+                <?php if ($has_video): ?>
+                <button class="yyk-tab-btn" data-tab="video">
+                    <?php _e('游戏视频', 'yyk-app-download'); ?>
+                </button>
+                <?php endif; ?>
+                <?php if ($has_gamenotice): ?>
+                <button class="yyk-tab-btn" data-tab="notice">
+                    <?php _e('游戏公告', 'yyk-app-download'); ?>
+                </button>
+                <?php endif; ?>
+                <?php if ($has_benefits): ?>
+                <button class="yyk-tab-btn" data-tab="benefits">
+                    <?php _e('福利福利', 'yyk-app-download'); ?>
+                </button>
+                <?php endif; ?>
+                <?php if ($has_gifts): ?>
+                <button class="yyk-tab-btn" data-tab="gifts">
+                    <?php _e('游戏礼包', 'yyk-app-download'); ?>
+                </button>
+                <?php endif; ?>
+            </div>
+            
+            <div class="yyk-tabs-content">
+                <div class="yyk-tab-panel active" id="tab-description">
+                    <div class="yyk-app-description">
+                        <?php the_content(); ?>
+                    </div>
+                </div>
+                
+                <?php if ($has_video): ?>
+                <div class="yyk-tab-panel" id="tab-video">
+                    <div class="yyk-app-video">
+                        <video src="<?php echo esc_url($video); ?>" controls style="width:100%;border-radius:8px;">
+                            您的浏览器不支持视频播放。
+                        </video>
+                    </div>
+                </div>
+                <?php endif; ?>
+                
+                <?php if ($has_gamenotice): ?>
+                <div class="yyk-tab-panel" id="tab-notice">
+                    <div class="yyk-app-notice">
+                        <div class="yyk-notice-content">
+                            <?php echo wp_kses_post($gamenotice); ?>
+                        </div>
+                    </div>
+                </div>
+                <?php endif; ?>
+                
+                <?php if ($has_benefits): ?>
+                <div class="yyk-tab-panel" id="tab-benefits">
+                    <div class="yyk-app-benefits">
+                        <?php if (!empty($fanli)): ?>
+                        <div class="yyk-benefit-item yyk-benefit-fanli">
+                            <h3><?php _e('返利介绍', 'yyk-app-download'); ?></h3>
+                            <div class="yyk-benefit-content">
+                                <?php echo wp_kses_post($fanli); ?>
+                            </div>
+                        </div>
+                        <?php endif; ?>
+                        
+                        <div class="yyk-benefit-item yyk-benefit-vip-table">
+                            <h3><?php _e('VIP等级表', 'yyk-app-download'); ?></h3>
+                            <div class="yyk-vip-table-wrapper">
+                                <table class="yyk-vip-table">
+                                    <thead>
+                                        <tr>
+                                            <th>VIP等级</th>
+                                            <th>充值金额</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        <tr><td>SVIP1</td><td>0.1</td></tr>
+                                        <tr><td>SVIP2</td><td>1</td></tr>
+                                        <tr><td>SVIP3</td><td>10</td></tr>
+                                        <tr><td>SVIP4</td><td>20</td></tr>
+                                        <tr><td>SVIP5</td><td>40</td></tr>
+                                        <tr><td>SVIP6</td><td>70</td></tr>
+                                        <tr><td>SVIP7</td><td>130</td></tr>
+                                        <tr><td>SVIP8</td><td>230</td></tr>
+                                        <tr><td>SVIP9</td><td>370</td></tr>
+                                        <tr><td>SVIP10</td><td>550</td></tr>
+                                        <tr><td>SVIP11</td><td>780</td></tr>
+                                        <tr><td>SVIP12</td><td>1060</td></tr>
+                                        <tr><td>SVIP13</td><td>1390</td></tr>
+                                        <tr><td>SVIP14</td><td>1780</td></tr>
+                                        <tr><td>SVIP15</td><td>2230</td></tr>
+                                        <tr><td>SVIP16</td><td>3130</td></tr>
+                                        <tr><td>SVIP17</td><td>4930</td></tr>
+                                        <tr><td>SVIP18</td><td>8530</td></tr>
+                                        <tr><td>SVIP19</td><td>15730</td></tr>
+                                        <tr><td>SVIP20</td><td>30130</td></tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <?php endif; ?>
+                
+                <?php if ($has_gifts): ?>
+                <div class="yyk-tab-panel" id="tab-gifts">
+                    <?php
+                    $gifts = get_post_meta(get_the_ID(), '_yyk_st_gifts', true);
+                    $gifts_array = json_decode($gifts, true);
+                    if (!is_array($gifts_array)) {
+                        $gifts_array = [];
+                    }
+                    $gifts_array = array_filter($gifts_array);
+                    ?>
+                    <div class="yyk-gifts-list">
+                        <?php foreach ($gifts_array as $gift): ?>
+                            <div class="yyk-gift-item">
+                                <div class="yyk-gift-icon">🎁</div>
+                                <div class="yyk-gift-info">
+                                    <h4 class="yyk-gift-name"><?php echo esc_html($gift['name'] ?? '礼包'); ?></h4>
+                                    <?php if (!empty($gift['content'])): ?>
+                                        <p class="yyk-gift-content" style="margin:8px 0;font-size:13px;color:#666;"><?php echo esc_html($gift['content']); ?></p>
+                                    <?php endif; ?>
+                                    <div class="yyk-gift-meta">
+                                        <span class="yyk-gift-tag">剩余: <?php echo esc_html($gift['remain'] ?? $gift['part_num'] ?? '0'); ?></span>
+                                        <span class="yyk-gift-time">
+                                            <?php if (!empty($gift['start_time']) && !empty($gift['end_time'])): ?>
+                                                <?php echo esc_html($gift['start_time']); ?> - <?php echo esc_html($gift['end_time']); ?>
+                                            <?php else: ?>
+                                                长期有效
+                                            <?php endif; ?>
+                                        </span>
+                                    </div>
+                                </div>
+                                <?php if (!empty($gift['code'] ?? $gift['card'])): ?>
+                                    <button class="yyk-gift-btn" 
+                                            data-gift-code="<?php echo esc_attr($gift['code'] ?? $gift['card']); ?>"
+                                            onclick="copyGiftCode(this)">
+                                        领取礼包
+                                    </button>
+                                <?php endif; ?>
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                </div>
+                <?php endif; ?>
+            </div>
+        </div>
+        
+        <?php
+        $screenshots = get_post_meta(get_the_ID(), '_yyk_st_photos', true);
+        if (!empty($screenshots)):
+            $screenshot_array = json_decode($screenshots, true);
+            if (!is_array($screenshot_array)) {
+                $screenshot_array = [];
+            }
+            $screenshot_array = array_filter($screenshot_array);
+        ?>
+            <div class="yyk-app-screenshots">
+                <h2><?php _e('游戏截图', 'yyk-app-download'); ?></h2>
+                <div class="yyk-screenshot-wrapper">
+                    <button class="yyk-screenshot-btn yyk-screenshot-prev" onclick="scrollScreenshots(-1)">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="15 18 9 12 15 6"></polyline>
+                        </svg>
+                    </button>
+                    <div class="yyk-screenshot-list" id="yyk-screenshot-list">
+                        <?php foreach ($screenshot_array as $screenshot): ?>
+                            <div class="yyk-screenshot-item">
+                                <img src="<?php echo esc_url(trim($screenshot)); ?>" 
+                                     alt="<?php _e('游戏截图', 'yyk-app-download'); ?>"
+                                     loading="lazy">
+                            </div>
+                        <?php endforeach; ?>
+                    </div>
+                    <button class="yyk-screenshot-btn yyk-screenshot-next" onclick="scrollScreenshots(1)">
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="9 18 15 12 9 6"></polyline>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        <?php endif; ?>
         
         <?php
         $categories = get_the_terms(get_the_ID(), 'yyk_app_category');
@@ -186,22 +460,22 @@ get_header();
             <div class="yyk-related-list">
                 <?php while ($related_query->have_posts()): $related_query->the_post(); ?>
                     <?php
+                    $app_icon_url = get_post_meta(get_the_ID(), '_yyk_app_icon_url', true);
                     $app_icon_id = get_post_meta(get_the_ID(), '_yyk_app_icon_id', true);
-                    $app_icon_url = $app_icon_id ? wp_get_attachment_url($app_icon_id) : '';
+                    $default_icon_url = plugins_url('assets/images/default-icon.png', dirname(__FILE__, 2) . '/app-download-manager.php');
+                    
+                    $final_icon_url = $default_icon_url;
+                    if (!empty($app_icon_url)) {
+                        $final_icon_url = $app_icon_url;
+                    } elseif ($app_icon_id) {
+                        $final_icon_url = wp_get_attachment_url($app_icon_id);
+                    }
                     ?>
                     <div class="yyk-related-item">
                         <div class="yyk-related-icon">
                             <a href="<?php the_permalink(); ?>">
-                                <?php if ($app_icon_url): ?>
-                                    <img src="<?php echo esc_url($app_icon_url); ?>" 
-                                         alt="<?php the_title_attribute(); ?>">
-                                <?php else: ?>
-                                    <?php 
-                                    $default_icon_url = plugins_url('assets/images/default-icon.png', dirname(__FILE__, 2) . '/app-download-manager.php');
-                                    ?>
-                                    <img src="<?php echo esc_url($default_icon_url); ?>" 
-                                         alt="<?php the_title_attribute(); ?>">
-                                <?php endif; ?>
+                                <img src="<?php echo esc_url($final_icon_url); ?>" 
+                                     alt="<?php the_title_attribute(); ?>">
                             </a>
                         </div>
                         
@@ -217,307 +491,5 @@ get_header();
     wp_reset_postdata();
     ?>
 </div>
-
-<style>
-/* 详情页专用样式，内联避免被覆盖 */
-.yyk-single-app-container {
-    max-width: 1200px;
-    margin: 30px auto;
-    padding: 20px;
-    background: white;
-    border-radius: 12px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.05);
-}
-
-/* 应用头部 */
-.yyk-app-header {
-    display: grid;
-    grid-template-columns: 200px 1fr auto;
-    gap: 30px;
-    align-items: start;
-    padding: 30px;
-    border-bottom: 2px solid #f0f0f0;
-    margin-bottom: 30px;
-}
-
-/* 应用图标 */
-.yyk-app-icon {
-    width: 200px;
-    height: 200px;
-    border-radius: 20px;
-    overflow: hidden;
-    box-shadow: 0 6px 20px rgba(0,0,0,0.1);
-    background: white;
-}
-
-.yyk-app-icon img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    padding: 15px;
-    box-sizing: border-box;
-}
-
-/* 应用信息 */
-.yyk-app-info {
-    flex: 1;
-    min-width: 0;
-}
-
-.yyk-app-title {
-    margin: 0 0 20px 0;
-    font-size: 32px;
-    font-weight: 700;
-    color: #333;
-    line-height: 1.2;
-}
-
-/* 应用元数据 */
-.yyk-app-meta {
-    margin-bottom: 25px;
-}
-
-.yyk-meta-item {
-    display: flex;
-    margin-bottom: 10px;
-    align-items: center;
-}
-
-.yyk-meta-label {
-    font-weight: 600;
-    color: #666;
-    min-width: 100px;
-    margin-right: 15px;
-}
-
-.yyk-meta-value {
-    color: #333;
-    font-size: 16px;
-}
-
-/* 应用操作按钮 */
-.yyk-app-actions {
-    display: flex;
-    gap: 15px;
-    flex-wrap: wrap;
-    margin-top: 25px;
-}
-
-.yyk-download-btn {
-    padding: 14px 28px;
-    border-radius: 8px;
-    text-decoration: none;
-    font-size: 16px;
-    font-weight: 600;
-    text-align: center;
-    min-width: 140px;
-    transition: all 0.3s ease;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    border: 2px solid transparent;
-}
-
-.yyk-download-btn.yyk-primary {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-}
-
-.yyk-download-btn.yyk-android {
-    background: #3ddc84;
-    color: #333;
-}
-
-.yyk-download-btn.yyk-ios {
-    background: #000;
-    color: white;
-}
-
-/* 二维码 */
-.yyk-qr-code {
-    text-align: center;
-    padding: 15px;
-    background: #f8f9fa;
-    border-radius: 10px;
-    border: 1px solid #e9ecef;
-    width: 180px;
-}
-
-.yyk-qr-code img {
-    width: 150px;
-    height: 150px;
-    display: block;
-    margin: 0 auto 10px;
-}
-
-.yyk-qr-code p {
-    margin: 0;
-    font-size: 14px;
-    color: #666;
-    font-weight: 500;
-}
-
-/* 应用内容区域 */
-.yyk-app-content {
-    padding: 0 30px 30px;
-}
-
-.yyk-app-content h2 {
-    margin: 0 0 20px 0;
-    font-size: 28px;
-    color: #333;
-    padding-bottom: 15px;
-    border-bottom: 2px solid #f0f0f0;
-}
-
-.yyk-app-description {
-    font-size: 16px;
-    line-height: 1.8;
-    color: #444;
-    margin-bottom: 40px;
-}
-
-/* 应用分类 */
-.yyk-app-categories {
-    margin: 40px 0;
-    padding: 25px;
-    background: #f8f9fa;
-    border-radius: 10px;
-}
-
-.yyk-category-list {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 10px;
-}
-
-.yyk-category-tag {
-    background: white;
-    color: #0073aa;
-    padding: 8px 16px;
-    border-radius: 20px;
-    text-decoration: none;
-    font-size: 14px;
-    font-weight: 500;
-    border: 1px solid #0073aa;
-    transition: all 0.3s ease;
-}
-
-/* 相关应用 */
-.yyk-related-apps {
-    margin-top: 50px;
-    padding-top: 30px;
-    border-top: 2px solid #f0f0f0;
-}
-
-.yyk-related-list {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-    gap: 20px;
-}
-
-.yyk-related-item {
-    background: white;
-    border-radius: 10px;
-    padding: 15px;
-    text-align: center;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-    transition: all 0.3s ease;
-}
-
-.yyk-related-icon {
-    width: 80px;
-    height: 80px;
-    margin: 0 auto 15px;
-    border-radius: 16px;
-    overflow: hidden;
-    background: white;
-}
-
-.yyk-related-icon img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-    padding: 10px;
-    box-sizing: border-box;
-}
-
-.yyk-related-title {
-    margin: 0;
-    font-size: 14px;
-    line-height: 1.4;
-}
-
-/* 响应式设计 */
-@media (max-width: 992px) {
-    .yyk-app-header {
-        grid-template-columns: 150px 1fr;
-    }
-    
-    .yyk-app-icon {
-        width: 150px;
-        height: 150px;
-    }
-}
-
-@media (max-width: 768px) {
-    .yyk-single-app-container {
-        margin: 15px auto;
-        padding: 15px;
-    }
-    
-    .yyk-app-header {
-        grid-template-columns: 1fr;
-        gap: 20px;
-        text-align: center;
-    }
-    
-    .yyk-app-icon {
-        width: 120px;
-        height: 120px;
-        margin: 0 auto;
-    }
-    
-    .yyk-app-title {
-        font-size: 24px;
-        text-align: center;
-        margin-bottom: 15px;
-    }
-    
-    .yyk-app-meta {
-        text-align: center;
-    }
-    
-    .yyk-meta-item {
-        justify-content: center;
-        flex-direction: column;
-    }
-    
-    .yyk-meta-label {
-        margin-right: 0;
-        margin-bottom: 5px;
-    }
-    
-    .yyk-app-actions {
-        justify-content: center;
-    }
-    
-    .yyk-download-btn {
-        min-width: 120px;
-        padding: 12px 20px;
-        font-size: 14px;
-    }
-    
-    .yyk-qr-code {
-        grid-column: 1 / -1;
-        width: auto;
-        margin-top: 20px;
-    }
-    
-    .yyk-app-content {
-        padding: 0 15px 20px;
-    }
-}
-</style>
 
 <?php get_footer(); ?>

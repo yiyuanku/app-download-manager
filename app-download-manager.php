@@ -3,7 +3,7 @@
  * Plugin Name: 应用下载管理器 (YYK)
  * Plugin URI: https://yourwebsite.com/
  * Description: 专业的应用下载管理插件，支持卡片样式和游戏盒子样式展示，集成ST手游采集
- * Version: 1.0.2
+ * Version: 0.1.0
  * Author: 您的名字
  * License: GPL v2 or later
  * Text Domain: yyk-app-download
@@ -29,7 +29,7 @@ function yyk_app_download_php_version_notice() {
 }
 
 // 定义插件常量
-define('YYK_APP_VERSION', '1.0.2');
+define('YYK_APP_VERSION', '1.1.2');
 define('YYK_APP_PLUGIN_DIR', plugin_dir_path(__FILE__));
 define('YYK_APP_PLUGIN_URL', plugin_dir_url(__FILE__));
 define('YYK_APP_ASSETS_URL', YYK_APP_PLUGIN_URL . 'assets/');
@@ -61,6 +61,7 @@ if (!class_exists('YYK_App_Download_Manager')) {
             add_action('wp_enqueue_scripts', [$this, 'enqueue_public_assets']);
             add_action('admin_enqueue_scripts', [$this, 'enqueue_admin_assets']);
             add_action('admin_menu', [$this, 'add_admin_menu']);
+            add_action('widgets_init', [$this, 'register_widgets']);
             
             add_filter('plugin_action_links_' . plugin_basename(__FILE__), [$this, 'add_plugin_action_links']);
             
@@ -70,8 +71,16 @@ if (!class_exists('YYK_App_Download_Manager')) {
         }
         
         public function activate() {
+            $this->include_files();
+            
+            // 先注册文章类型和分类法
+            if (class_exists('YYK_App_Post_Type')) {
+                $post_type_instance = YYK_App_Post_Type::get_instance();
+                $post_type_instance->register_post_type();
+                $post_type_instance->register_taxonomy();
+            }
+            
             $this->create_default_categories();
-            flush_rewrite_rules();
             
             update_option('yyk_app_default_style', 'card');
             update_option('yyk_app_items_per_page', 12);
@@ -114,12 +123,16 @@ if (!class_exists('YYK_App_Download_Manager')) {
             
             $this->include_files();
             
-            // 初始化各个模块
+            // 先初始化文章类型
             if (class_exists('YYK_App_Post_Type')) {
                 YYK_App_Post_Type::get_instance()->init();
                 error_log('YYK: 文章类型已初始化');
             }
 
+            // 自动刷新重写规则
+            $this->flush_rewrite_rules_on_init();
+            
+            // 初始化其他模块
             if (class_exists('YYK_App_Meta_Boxes')) {
                 YYK_App_Meta_Boxes::get_instance()->init();
                 error_log('YYK: 元字段已初始化');
@@ -150,12 +163,24 @@ if (!class_exists('YYK_App_Download_Manager')) {
                 error_log('YYK: 诊断工具已初始化');
             }
             
+            error_log('YYK应用下载管理器: 初始化完成');
+        }
+        
+        private function flush_rewrite_rules_on_init() {
+            $saved_version = get_option('yyk_app_version');
+            
+            if ($saved_version !== YYK_APP_VERSION) {
+                flush_rewrite_rules();
+                update_option('yyk_app_version', YYK_APP_VERSION);
+                error_log('YYK: 重写规则已刷新');
+            }
+        }
+        
+        public function register_widgets() {
             if (class_exists('YYK_App_Widget')) {
-                add_action('widgets_init', ['YYK_App_Widget', 'register']);
+                register_widget('YYK_App_Widget');
                 error_log('YYK: 小工具已注册');
             }
-            
-            error_log('YYK应用下载管理器: 初始化完成');
         }
         
         private function include_files() {
@@ -212,6 +237,38 @@ if (!class_exists('YYK_App_Download_Manager')) {
                 'loading_text' => __('加载中...', 'yyk-app-download'),
                 'error_text' => __('加载失败，请重试', 'yyk-app-download')
             ]);
+            
+            // 添加平台图标内联CSS
+            $this->add_platform_icons_css();
+        }
+        
+        private function add_platform_icons_css() {
+            $android_icon = YYK_APP_ASSETS_URL . 'images/安卓.svg';
+            $ios_icon = YYK_APP_ASSETS_URL . 'images/ios.svg';
+            $windows_icon = YYK_APP_ASSETS_URL . 'images/Windows.svg';
+            
+            $custom_css = "
+                /* ========== 平台图标样式 ========== */
+                .yyk-platform-icon.android::before {
+                    background-image: url('{$android_icon}') !important;
+                }
+                .yyk-platform-icon.ios::before {
+                    background-image: url('{$ios_icon}') !important;
+                }
+                .yyk-platform-icon.pc::before {
+                    background-image: url('{$windows_icon}') !important;
+                }
+                .yyk-platform-icon.all::before {
+                    background-image: url('{$android_icon}'), url('{$ios_icon}'), url('{$windows_icon}') !important;
+                    background-size: 20px 20px, 20px 20px, 20px 20px !important;
+                    background-position: 0 center, 22px center, 44px center !important;
+                    background-repeat: no-repeat !important;
+                    width: 68px !important;
+                    height: 20px !important;
+                }
+            ";
+            
+            wp_add_inline_style('yyk-app-public-style', $custom_css);
         }
         
         public function enqueue_admin_assets($hook) {

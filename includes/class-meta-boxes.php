@@ -115,6 +115,15 @@ if (!class_exists('YYK_App_Meta_Boxes')) {
             );
             
             add_meta_box(
+                'yyk_st_extra',
+                __('ST采集字段', 'yyk-app-download'),
+                [$this, 'render_st_extra_metabox'],
+                'yyk_app_download',
+                'normal',
+                'high'
+            );
+            
+            add_meta_box(
                 'yyk_app_links',
                 __('下载链接', 'yyk-app-download'),
                 [$this, 'render_download_links_metabox'],
@@ -206,6 +215,122 @@ if (!class_exists('YYK_App_Meta_Boxes')) {
             .yyk-field { margin-bottom: 15px; }
             .yyk-field label { display: block; margin-bottom: 5px; font-weight: 600; }
             .yyk-field .description { margin: 5px 0 0 0; font-style: italic; color: #666; }
+            </style>
+            
+            <?php
+        }
+        
+        public function render_st_extra_metabox($post) {
+            wp_nonce_field('yyk_st_extra_meta_box', 'yyk_st_extra_meta_box_nonce');
+            
+            $short_intro = get_post_meta($post->ID, '_yyk_st_short_intro', true);
+            $discount = get_post_meta($post->ID, '_yyk_st_discount', true);
+            $welfare_tags = get_post_meta($post->ID, '_yyk_st_welfare_tags', true);
+            $fanli = get_post_meta($post->ID, '_yyk_st_fanli', true);
+            $vip_intro = get_post_meta($post->ID, '_yyk_st_vip_intro', true);
+            $photos = get_post_meta($post->ID, '_yyk_st_photos', true);
+            $gifts = get_post_meta($post->ID, '_yyk_st_gifts', true);
+            $video = get_post_meta($post->ID, '_yyk_st_video', true);
+            $game_bbs = get_post_meta($post->ID, '_yyk_st_game_bbs', true);
+            $gamenotice = get_post_meta($post->ID, '_yyk_st_gamenotice', true);
+            
+            $welfare_tags_array = maybe_unserialize($welfare_tags);
+            if (!is_array($welfare_tags_array)) {
+                $welfare_tags_array = [];
+            }
+            
+            // 如果discount是数字，格式化为带"折"的字符串
+            if (is_numeric($discount)) {
+                $discount = $discount . '折';
+            }
+            ?>
+            
+            <div class="yyk-st-extra-fields">
+                <div class="yyk-field">
+                    <label for="yyk_st_short_intro"><?php _e('福利简介:', 'yyk-app-download'); ?></label>
+                    <textarea id="yyk_st_short_intro" name="yyk_st_short_intro" 
+                              class="widefat" rows="3"><?php echo esc_textarea($short_intro); ?></textarea>
+                </div>
+                
+                <div class="yyk-field">
+                    <label for="yyk_st_discount"><?php _e('折扣:', 'yyk-app-download'); ?></label>
+                    <input type="text" id="yyk_st_discount" name="yyk_st_discount" 
+                           value="<?php echo esc_attr($discount); ?>" class="widefat">
+                    <p class="description"><?php _e('例如: 0.1折', 'yyk-app-download'); ?></p>
+                </div>
+                
+                <div class="yyk-field">
+                    <label for="yyk_st_welfare_tags"><?php _e('福利标签:', 'yyk-app-download'); ?></label>
+                    <input type="text" id="yyk_st_welfare_tags" name="yyk_st_welfare_tags" 
+                           value="<?php echo esc_attr(implode(',', $welfare_tags_array)); ?>" class="widefat">
+                    <p class="description"><?php _e('多个标签用英文逗号分隔，例如: 满减福利,首充福利', 'yyk-app-download'); ?></p>
+                </div>
+                
+                <div class="yyk-field">
+                    <label for="yyk_st_fanli"><?php _e('返利介绍:', 'yyk-app-download'); ?></label>
+                    <?php
+                    wp_editor($fanli, 'yyk_st_fanli', [
+                        'media_buttons' => true,
+                        'textarea_rows' => 5,
+                        'teeny' => false,
+                        'textarea_name' => 'yyk_st_fanli',
+                    ]);
+                    ?>
+                </div>
+                
+                <div class="yyk-field">
+                    <label for="yyk_st_vip_intro"><?php _e('VIP介绍:', 'yyk-app-download'); ?></label>
+                    <?php
+                    wp_editor($vip_intro, 'yyk_st_vip_intro', [
+                        'media_buttons' => true,
+                        'textarea_rows' => 5,
+                        'teeny' => false,
+                        'textarea_name' => 'yyk_st_vip_intro',
+                    ]);
+                    ?>
+                </div>
+                
+                <div class="yyk-field">
+                    <label for="yyk_st_photos"><?php _e('五宣图/游戏截图:', 'yyk-app-download'); ?></label>
+                    <textarea id="yyk_st_photos" name="yyk_st_photos" 
+                              class="widefat" rows="4"><?php echo esc_textarea($photos); ?></textarea>
+                    <p class="description"><?php _e('JSON格式的图片URL数组，例如: ["http://example.com/1.jpg","http://example.com/2.jpg"]', 'yyk-app-download'); ?></p>
+                </div>
+                
+                <div class="yyk-field">
+                    <label for="yyk_st_gifts"><?php _e('游戏礼包:', 'yyk-app-download'); ?></label>
+                    <textarea id="yyk_st_gifts" name="yyk_st_gifts" 
+                              class="widefat" rows="6"><?php echo esc_textarea($gifts); ?></textarea>
+                    <p class="description"><?php _e('JSON格式的礼包数据', 'yyk-app-download'); ?></p>
+                </div>
+                
+                <div class="yyk-field">
+                    <label for="yyk_st_video"><?php _e('游戏视频:', 'yyk-app-download'); ?></label>
+                    <input type="url" id="yyk_st_video" name="yyk_st_video" 
+                           value="<?php echo esc_url($video); ?>" class="widefat">
+                    <p class="description"><?php _e('游戏视频的URL地址', 'yyk-app-download'); ?></p>
+                </div>
+                
+                <div class="yyk-field">
+                    <label for="yyk_st_game_bbs"><?php _e('备用视频:', 'yyk-app-download'); ?></label>
+                    <input type="url" id="yyk_st_game_bbs" name="yyk_st_game_bbs" 
+                           value="<?php echo esc_url($game_bbs); ?>" class="widefat">
+                    <p class="description"><?php _e('备用视频地址（主视频为空时使用）', 'yyk-app-download'); ?></p>
+                </div>
+                
+                <div class="yyk-field">
+                    <label for="yyk_st_gamenotice"><?php _e('游戏公告:', 'yyk-app-download'); ?></label>
+                    <textarea id="yyk_st_gamenotice" name="yyk_st_gamenotice" 
+                              class="widefat" rows="3"><?php echo esc_textarea($gamenotice); ?></textarea>
+                    <p class="description"><?php _e('游戏公告内容', 'yyk-app-download'); ?></p>
+                </div>
+            </div>
+            
+            <style>
+            .yyk-st-extra-fields { padding: 12px 0; }
+            .yyk-st-extra-fields .yyk-field { margin-bottom: 20px; }
+            .yyk-st-extra-fields .yyk-field label { display: block; margin-bottom: 5px; font-weight: 600; }
+            .yyk-st-extra-fields .yyk-field .description { margin: 5px 0 0 0; font-style: italic; color: #666; }
             </style>
             
             <?php
@@ -331,12 +456,6 @@ if (!class_exists('YYK_App_Meta_Boxes')) {
         }
 
         public function save_meta_boxes($post_id, $post) {
-            // 安全检查 - 先检查主元框的nonce
-            if (!isset($_POST['yyk_app_meta_box_nonce']) || 
-                !wp_verify_nonce($_POST['yyk_app_meta_box_nonce'], 'yyk_app_meta_box')) {
-                return $post_id;
-            }
-            
             // 检查自动保存
             if (defined('DOING_AUTOSAVE') && DOING_AUTOSAVE) {
                 return $post_id;
@@ -356,52 +475,119 @@ if (!class_exists('YYK_App_Meta_Boxes')) {
             }
             
             // 保存应用信息字段
-            $info_fields = [
-                'yyk_app_version' => '_yyk_app_version',
-                'yyk_app_size' => '_yyk_app_size',
-                'yyk_app_developer' => '_yyk_app_developer',
-                'yyk_app_compatibility' => '_yyk_app_compatibility',
-                'yyk_app_update_date' => '_yyk_app_update_date',
-                'yyk_app_platform' => '_yyk_app_platform',
-                'yyk_app_game_type' => '_yyk_app_game_type',
-            ];
-            
-            foreach ($info_fields as $field => $meta_key) {
-                if (isset($_POST[$field])) {
-                    update_post_meta($post_id, $meta_key, sanitize_text_field($_POST[$field]));
+            if (isset($_POST['yyk_app_meta_box_nonce']) && 
+                wp_verify_nonce($_POST['yyk_app_meta_box_nonce'], 'yyk_app_meta_box')) {
+                
+                // 保存应用信息字段
+                $info_fields = [
+                    'yyk_app_version' => '_yyk_app_version',
+                    'yyk_app_size' => '_yyk_app_size',
+                    'yyk_app_developer' => '_yyk_app_developer',
+                    'yyk_app_compatibility' => '_yyk_app_compatibility',
+                    'yyk_app_update_date' => '_yyk_app_update_date',
+                    'yyk_app_platform' => '_yyk_app_platform',
+                    'yyk_app_game_type' => '_yyk_app_game_type',
+                ];
+                
+                foreach ($info_fields as $field => $meta_key) {
+                    if (isset($_POST[$field])) {
+                        update_post_meta($post_id, $meta_key, sanitize_text_field($_POST[$field]));
+                    }
+                }
+                
+                // 保存链接字段
+                $link_fields = [
+                    'yyk_app_download_url' => '_yyk_app_download_url',
+                    'yyk_app_android_url' => '_yyk_app_android_url',
+                    'yyk_app_ios_url' => '_yyk_app_ios_url',
+                    'yyk_app_pc_url' => '_yyk_app_pc_url',
+                    'yyk_app_qr_code' => '_yyk_app_qr_code',
+                ];
+                
+                foreach ($link_fields as $field => $meta_key) {
+                    if (isset($_POST[$field])) {
+                        update_post_meta($post_id, $meta_key, esc_url_raw($_POST[$field]));
+                    }
+                }
+                
+                // 保存状态字段
+                $status_fields = [
+                    'yyk_app_is_hot' => '_yyk_app_is_hot',
+                    'yyk_app_is_recommend' => '_yyk_app_is_recommend',
+                    'yyk_app_is_new' => '_yyk_app_is_new',
+                ];
+                
+                foreach ($status_fields as $field => $meta_key) {
+                    $value = isset($_POST[$field]) ? '1' : '0';
+                    update_post_meta($post_id, $meta_key, $value);
+                }
+                
+                // 保存下载次数
+                if (isset($_POST['yyk_app_download_count'])) {
+                    update_post_meta($post_id, '_yyk_app_download_count', intval($_POST['yyk_app_download_count']));
                 }
             }
             
-            // 保存链接字段
-            $link_fields = [
-                'yyk_app_download_url' => '_yyk_app_download_url',
-                'yyk_app_android_url' => '_yyk_app_android_url',
-                'yyk_app_ios_url' => '_yyk_app_ios_url',
-                'yyk_app_pc_url' => '_yyk_app_pc_url',
-                'yyk_app_qr_code' => '_yyk_app_qr_code',
-            ];
-            
-            foreach ($link_fields as $field => $meta_key) {
-                if (isset($_POST[$field])) {
-                    update_post_meta($post_id, $meta_key, esc_url_raw($_POST[$field]));
+            // 保存ST采集字段
+            if (isset($_POST['yyk_st_extra_meta_box_nonce']) && 
+                wp_verify_nonce($_POST['yyk_st_extra_meta_box_nonce'], 'yyk_st_extra_meta_box')) {
+                
+                // 保存福利简介
+                if (isset($_POST['yyk_st_short_intro'])) {
+                    update_post_meta($post_id, '_yyk_st_short_intro', sanitize_textarea_field($_POST['yyk_st_short_intro']));
                 }
-            }
-            
-            // 保存状态字段
-            $status_fields = [
-                'yyk_app_is_hot' => '_yyk_app_is_hot',
-                'yyk_app_is_recommend' => '_yyk_app_is_recommend',
-                'yyk_app_is_new' => '_yyk_app_is_new',
-            ];
-            
-            foreach ($status_fields as $field => $meta_key) {
-                $value = isset($_POST[$field]) ? '1' : '0';
-                update_post_meta($post_id, $meta_key, $value);
-            }
-            
-            // 保存下载次数
-            if (isset($_POST['yyk_app_download_count'])) {
-                update_post_meta($post_id, '_yyk_app_download_count', intval($_POST['yyk_app_download_count']));
+                
+                // 保存折扣
+                if (isset($_POST['yyk_st_discount'])) {
+                    $discount = sanitize_text_field($_POST['yyk_st_discount']);
+                    // 如果包含"折"字，只保存数字部分
+                    if (strpos($discount, '折') !== false) {
+                        $discount = floatval(str_replace('折', '', $discount));
+                    }
+                    update_post_meta($post_id, '_yyk_st_discount', $discount);
+                }
+                
+                // 保存福利标签
+                if (isset($_POST['yyk_st_welfare_tags'])) {
+                    $tags_str = sanitize_text_field($_POST['yyk_st_welfare_tags']);
+                    $tags_array = array_filter(array_map('trim', explode(',', $tags_str)));
+                    update_post_meta($post_id, '_yyk_st_welfare_tags', serialize($tags_array));
+                }
+                
+                // 保存返利介绍
+                if (isset($_POST['yyk_st_fanli'])) {
+                    update_post_meta($post_id, '_yyk_st_fanli', wp_kses_post($_POST['yyk_st_fanli']));
+                }
+                
+                // 保存VIP介绍
+                if (isset($_POST['yyk_st_vip_intro'])) {
+                    update_post_meta($post_id, '_yyk_st_vip_intro', wp_kses_post($_POST['yyk_st_vip_intro']));
+                }
+                
+                // 保存五宣图
+                if (isset($_POST['yyk_st_photos'])) {
+                    update_post_meta($post_id, '_yyk_st_photos', sanitize_textarea_field($_POST['yyk_st_photos']));
+                }
+                
+                // 保存游戏礼包
+                if (isset($_POST['yyk_st_gifts'])) {
+                    update_post_meta($post_id, '_yyk_st_gifts', sanitize_textarea_field($_POST['yyk_st_gifts']));
+                }
+                
+                // 保存游戏视频
+                if (isset($_POST['yyk_st_video'])) {
+                    update_post_meta($post_id, '_yyk_st_video', esc_url_raw($_POST['yyk_st_video']));
+                }
+                
+                // 保存备用视频
+                if (isset($_POST['yyk_st_game_bbs'])) {
+                    update_post_meta($post_id, '_yyk_st_game_bbs', esc_url_raw($_POST['yyk_st_game_bbs']));
+                }
+                
+                // 保存游戏公告
+                if (isset($_POST['yyk_st_gamenotice'])) {
+                    update_post_meta($post_id, '_yyk_st_gamenotice', sanitize_textarea_field($_POST['yyk_st_gamenotice']));
+                }
             }
         }
     }

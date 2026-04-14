@@ -40,6 +40,15 @@ public function widget($args, $instance) {
     if (!empty($title) || $show_more_button) {
         echo '<div class="yyk-widget-header">';
         
+        echo '<span class="yyk-shape shape-1"></span>';
+        echo '<span class="yyk-shape shape-2"></span>';
+        echo '<span class="yyk-shape shape-3"></span>';
+        echo '<span class="yyk-shape shape-4"></span>';
+        echo '<span class="yyk-shape shape-5"></span>';
+        echo '<span class="yyk-shape shape-6"></span>';
+        echo '<span class="yyk-shape shape-7"></span>';
+        echo '<span class="yyk-shape shape-8"></span>';
+        
         if (!empty($title)) {
             echo $args['before_title'] . esc_html($title) . $args['after_title'];
         }
@@ -63,7 +72,7 @@ public function widget($args, $instance) {
             }
             
             if ($more_link) {
-                echo '<a href="' . esc_url($more_link) . '" class="yyk-widget-more">' . __('更多', 'yyk-app-download') . ' →</a>';
+                echo '<a href="' . esc_url($more_link) . '" class="yyk-widget-more">' . __('更多', 'yyk-app-download') . '</a>';
             }
         }
         
@@ -82,7 +91,7 @@ public function widget($args, $instance) {
     $icon_size = !empty($instance['icon_size']) ? $instance['icon_size'] : 'medium';
     
     // 根据列数设置不同的网格样式
-    $columns_class = 'yyk-columns-' . min(6, max(1, $columns));
+    $columns_class = 'yyk-columns-' . min(20, max(1, $columns));
     
     // 构建查询参数
     $query_args = [
@@ -146,28 +155,81 @@ public function widget($args, $instance) {
     // 执行查询
     $apps_query = new WP_Query($query_args);
     
+    // 调试信息：输出查询到的文章数量
+    if (current_user_can('manage_options')) {
+        echo '<div style="display:none;">找到 ' . $apps_query->found_posts . ' 个应用</div>';
+    }
+    
     if ($apps_query->have_posts()) {
         // 根据布局类型输出不同的容器
         echo '<div class="yyk-widget-container yyk-layout-' . esc_attr($layout) . ' ' . esc_attr($columns_class) . ' yyk-style-' . esc_attr($style) . ' yyk-icon-' . esc_attr($icon_size) . '">';
         
-        if ($layout === 'list') {
-            echo '<div class="yyk-widget-list">';
-            while ($apps_query->have_posts()) {
-                $apps_query->the_post();
-                $this->render_list_item(get_the_ID(), $style, $icon_size);
+        $total_posts = $apps_query->found_posts;
+        $items_per_page = 3 * $columns; // 3排 × 列数
+        $total_pages = ceil($total_posts / $items_per_page);
+        $is_pagination = $layout !== 'list' && $layout !== 'carousel' && $total_pages > 1;
+        
+        // 同时输出列表模式和其他模式，手机端CSS会自动选择显示哪个
+        echo '<div class="yyk-widget-list">';
+        while ($apps_query->have_posts()) {
+            $apps_query->the_post();
+            $this->render_list_item(get_the_ID(), $style, $icon_size);
+        }
+        echo '</div>';
+        
+        // 重置查询指针，用于第二次循环
+        $apps_query->rewind_posts();
+        
+        if ($layout !== 'list') {
+            // 轮播布局添加左右按钮
+            if ($layout === 'carousel') {
+                echo '<button class="yyk-carousel-btn yyk-carousel-btn-prev" type="button" aria-label="' . esc_attr__('上一页', 'yyk-app-download') . '">‹</button>';
             }
-            echo '</div>';
-        } else {
-            echo '<div class="yyk-widget-grid">';
+            
+            echo '<div class="yyk-widget-grid" data-total-pages="' . esc_attr($total_pages) . '" data-items-per-page="' . esc_attr($items_per_page) . '">';
+            $index = 0;
             while ($apps_query->have_posts()) {
                 $apps_query->the_post();
-                if (class_exists('YYK_App_Frontend')) {
-                    echo YYK_App_Frontend::render_app_card(get_the_ID(), $style, $icon_size);
+                
+                if ($layout === 'carousel') {
+                    // 轮播模式不添加分页类
+                    if (class_exists('YYK_App_Frontend')) {
+                        echo YYK_App_Frontend::render_app_card(get_the_ID(), $style, $icon_size);
+                    } else {
+                        $this->render_card_item(get_the_ID(), $style, $icon_size);
+                    }
                 } else {
-                    $this->render_card_item(get_the_ID(), $style, $icon_size);
+                    // 网格模式添加分页类
+                    $current_page = floor($index / $items_per_page) + 1;
+                    $page_class = 'yyk-page-' . $current_page;
+                    $hidden_class = $current_page > 1 ? 'yyk-hidden' : '';
+                    
+                    if (class_exists('YYK_App_Frontend')) {
+                        $card_html = YYK_App_Frontend::render_app_card(get_the_ID(), $style, $icon_size);
+                        // 给卡片添加分页类
+                        $card_html = preg_replace('/class="([^"]*)"/', 'class="$1 ' . $page_class . ' ' . $hidden_class . '"', $card_html, 1);
+                        echo $card_html;
+                    } else {
+                        $this->render_card_item(get_the_ID(), $style, $icon_size, $page_class . ' ' . $hidden_class);
+                    }
                 }
+                $index++;
             }
             echo '</div>';
+            
+            // 轮播布局添加右按钮
+            if ($layout === 'carousel') {
+                echo '<button class="yyk-carousel-btn yyk-carousel-btn-next" type="button" aria-label="' . esc_attr__('下一页', 'yyk-app-download') . '">›</button>';
+            }
+            
+            // 分页布局添加分页按钮
+            if ($is_pagination) {
+                echo '<div class="yyk-pagination">';
+                echo '<button class="yyk-pagination-prev" type="button" disabled>' . __('上一页', 'yyk-app-download') . '</button>';
+                echo '<span class="yyk-pagination-info">1 / ' . $total_pages . '</span>';
+                echo '<button class="yyk-pagination-next" type="button">' . __('下一页', 'yyk-app-download') . '</button>';
+                echo '</div>';
+            }
         }
         
         echo '</div>'; // 结束容器
@@ -184,12 +246,13 @@ public function widget($args, $instance) {
             
             // 获取应用图标
             $app_icon_id = get_post_meta($post_id, '_yyk_app_icon_id', true);
-            $icon_url = $this->get_app_icon_url($app_icon_id, $icon_size);
+            $icon_url = $this->get_app_icon_url($post_id, $app_icon_id, $icon_size);
             
             $version = get_post_meta($post_id, '_yyk_app_version', true);
             $size = get_post_meta($post_id, '_yyk_app_size', true);
             $is_hot = get_post_meta($post_id, '_yyk_app_is_hot', true);
             $is_recommend = get_post_meta($post_id, '_yyk_app_is_recommend', true);
+            $download_url = get_post_meta($post_id, '_yyk_app_download_url', true);
             ?>
             
             <div class="yyk-list-item">
@@ -225,16 +288,28 @@ public function widget($args, $instance) {
                         <span class="yyk-badge yyk-recommend"><?php _e('荐', 'yyk-app-download'); ?></span>
                     <?php endif; ?>
                 </div>
+                
+                <?php if ($download_url): ?>
+                    <div class="yyk-list-actions">
+                        <a href="<?php echo esc_url($download_url); ?>" 
+                           class="yyk-list-download" 
+                           target="_blank" 
+                           rel="nofollow"
+                           data-app-id="<?php echo $post_id; ?>">
+                            <?php _e('下载', 'yyk-app-download'); ?>
+                        </a>
+                    </div>
+                <?php endif; ?>
             </div>
             <?php
         }
         
-        private function render_card_item($post_id, $style, $icon_size) {
+        private function render_card_item($post_id, $style, $icon_size, $extra_class = '') {
             $post = get_post($post_id);
             
             // 获取应用图标
             $app_icon_id = get_post_meta($post_id, '_yyk_app_icon_id', true);
-            $icon_url = $this->get_app_icon_url($app_icon_id, $icon_size);
+            $icon_url = $this->get_app_icon_url($post_id, $app_icon_id, $icon_size);
             
             $version = get_post_meta($post_id, '_yyk_app_version', true);
             $size = get_post_meta($post_id, '_yyk_app_size', true);
@@ -246,7 +321,7 @@ public function widget($args, $instance) {
             
             if ($style === 'gamebox') {
                 ?>
-                <div class="yyk-gamebox yyk-icon-<?php echo esc_attr($icon_size); ?>">
+                <div class="yyk-gamebox yyk-icon-<?php echo esc_attr($icon_size); ?> <?php echo esc_attr($extra_class); ?>">
                     <div class="yyk-gamebox-icon">
                         <a href="<?php echo get_permalink($post_id); ?>">
                             <img src="<?php echo esc_url($icon_url); ?>" 
@@ -293,7 +368,7 @@ public function widget($args, $instance) {
                 <?php
             } else {
                 ?>
-                <div class="yyk-template-card yyk-icon-<?php echo esc_attr($icon_size); ?>">
+                <div class="yyk-template-card yyk-icon-<?php echo esc_attr($icon_size); ?> <?php echo esc_attr($extra_class); ?>">
                     <div class="yyk-card-header">
                         <div class="yyk-card-icon">
                             <a href="<?php echo get_permalink($post_id); ?>">
@@ -347,10 +422,14 @@ public function widget($args, $instance) {
             }
         }
         
-        private function get_app_icon_url($app_icon_id, $size = 'medium') {
+        private function get_app_icon_url($post_id, $app_icon_id, $size = 'medium') {
+            $app_icon_url = get_post_meta($post_id, '_yyk_app_icon_url', true);
             $icon_url = '';
             
-            if ($app_icon_id) {
+            if ($app_icon_url) {
+                // 使用远程图标URL
+                $icon_url = $app_icon_url;
+            } elseif ($app_icon_id) {
                 // 根据图标尺寸获取不同大小的图片
                 switch ($size) {
                     case 'small':
@@ -459,16 +538,11 @@ public function form($instance) {
                     <div class="yyk-settings-col">
                         <p>
                             <label for="<?php echo $this->get_field_id('columns'); ?>"><?php _e('每行列数:', 'yyk-app-download'); ?></label>
-                            <select class="widefat" 
-                                    id="<?php echo $this->get_field_id('columns'); ?>" 
-                                    name="<?php echo $this->get_field_name('columns'); ?>">
-                                <option value="1" <?php selected($instance['columns'], 1); ?>>1列</option>
-                                <option value="2" <?php selected($instance['columns'], 2); ?>>2列</option>
-                                <option value="3" <?php selected($instance['columns'], 3); ?>>3列</option>
-                                <option value="4" <?php selected($instance['columns'], 4); ?>>4列</option>
-                                <option value="5" <?php selected($instance['columns'], 5); ?>>5列</option>
-                                <option value="6" <?php selected($instance['columns'], 6); ?>>6列</option>
-                            </select>
+                            <input type="number" class="widefat" 
+                                   id="<?php echo $this->get_field_id('columns'); ?>" 
+                                   name="<?php echo $this->get_field_name('columns'); ?>" 
+                                   value="<?php echo esc_attr($instance['columns']); ?>" 
+                                   min="1" max="20" step="1">
                         </p>
                     </div>
                     
