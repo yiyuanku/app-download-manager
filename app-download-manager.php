@@ -65,6 +65,9 @@ if (!class_exists('YYK_App_Download_Manager')) {
             
             add_filter('plugin_action_links_' . plugin_basename(__FILE__), [$this, 'add_plugin_action_links']);
             
+            // 修改小工具的before_widget和after_widget包装器
+            add_filter('dynamic_sidebar_params', [$this, 'custom_widget_wrapper']);
+            
             // 添加ST采集器AJAX处理
             add_action('wp_ajax_yyk_record_download', [$this, 'handle_download_record']);
             add_action('wp_ajax_nopriv_yyk_record_download', [$this, 'handle_download_record']);
@@ -179,7 +182,19 @@ if (!class_exists('YYK_App_Download_Manager')) {
         public function register_widgets() {
             if (class_exists('YYK_App_Widget')) {
                 register_widget('YYK_App_Widget');
-                error_log('YYK: 小工具已注册');
+                error_log('YYK: 应用小工具已注册');
+            }
+            if (class_exists('YYK_Video_Widget')) {
+                register_widget('YYK_Video_Widget');
+                error_log('YYK: 视频小工具已注册');
+            }
+            if (class_exists('YYK_App_Carousel_Widget')) {
+                register_widget('YYK_App_Carousel_Widget');
+                error_log('YYK: 应用轮播小工具已注册');
+            }
+            if (class_exists('YYK_App_Logo_Widget')) {
+                register_widget('YYK_App_Logo_Widget');
+                error_log('YYK: 应用logo轮播小工具已注册');
             }
         }
         
@@ -317,6 +332,20 @@ if (!class_exists('YYK_App_Download_Manager')) {
             array_unshift($links, $st_link);
             array_unshift($links, $settings_link);
             return $links;
+        }
+        
+        public function custom_widget_wrapper($params) {
+            global $wp_registered_widgets;
+            
+            $widget_id = $params[0]['widget_id'];
+            $widget_obj = $wp_registered_widgets[$widget_id];
+            
+            if (strpos($widget_id, 'yyk_app') !== false || strpos($widget_id, 'yyk_video') !== false || strpos($widget_id, 'yyk_carousel') !== false || strpos($widget_id, 'yyk_logo') !== false) {
+                $params[0]['before_widget'] = '<div id="%1$s" class="yyk-widget-wrapper %2$s">';
+                $params[0]['after_widget'] = '</div>';
+            }
+            
+            return $params;
         }
         
         public function add_admin_menu() {

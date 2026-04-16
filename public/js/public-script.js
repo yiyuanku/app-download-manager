@@ -449,3 +449,123 @@ document.addEventListener('DOMContentLoaded', function() {
     
     // 页面加载时不需要额外操作
 });
+
+// ===== 视频播放器功能 =====
+document.addEventListener('DOMContentLoaded', function() {
+    const videoWrappers = document.querySelectorAll('.yyk-video-player-wrapper');
+    
+    videoWrappers.forEach(function(wrapper) {
+        const videoItems = wrapper.querySelectorAll('.yyk-video-item');
+        const playerId = videoItems.length > 0 ? videoItems[0].getAttribute('data-player-id') : null;
+        
+        if (!playerId) return;
+        
+        const mainVideo = document.getElementById('yyk-main-video-' + playerId);
+        const videoTitle = wrapper.querySelector('.yyk-video-title');
+        const videoListContainer = document.getElementById('yyk-video-list-' + playerId);
+        const navUp = wrapper.querySelector('.yyk-video-nav-up');
+        const navDown = wrapper.querySelector('.yyk-video-nav-down');
+        
+        if (!mainVideo || videoItems.length === 0) return;
+        
+        videoItems.forEach(function(item) {
+            item.addEventListener('click', function() {
+                const videoUrl = this.getAttribute('data-video');
+                const title = this.getAttribute('data-title');
+                
+                videoItems.forEach(function(i) {
+                    i.classList.remove('active');
+                });
+                this.classList.add('active');
+                
+                mainVideo.src = videoUrl;
+                if (videoTitle) {
+                    videoTitle.textContent = title;
+                }
+                
+                mainVideo.play();
+            });
+        });
+        
+        const scrollAmount = 100;
+        
+        if (navUp) {
+            navUp.addEventListener('click', function() {
+                if (videoListContainer) {
+                    videoListContainer.scrollBy({
+                        top: -scrollAmount,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        }
+        
+        if (navDown) {
+            navDown.addEventListener('click', function() {
+                if (videoListContainer) {
+                    videoListContainer.scrollBy({
+                        top: scrollAmount,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        }
+    });
+});
+
+// ===== 应用视频小工具功能 =====
+document.addEventListener('DOMContentLoaded', function() {
+    const videoWidgets = document.querySelectorAll('.yyk-video-widget');
+    
+    videoWidgets.forEach(function(widget) {
+        const videoItems = widget.querySelectorAll('.yyk-video-item');
+        const mainVideo = widget.querySelector('.yyk-main-video');
+        const videoScroll = widget.querySelector('.yyk-video-scroll');
+        const navUp = widget.querySelector('.yyk-video-nav-up');
+        const navDown = widget.querySelector('.yyk-video-nav-down');
+        
+        if (!mainVideo || videoItems.length === 0) return;
+        
+        videoItems.forEach(function(item) {
+            item.addEventListener('click', function() {
+                const videoUrl = this.getAttribute('data-video');
+                const posterUrl = this.getAttribute('data-poster');
+                
+                videoItems.forEach(function(i) {
+                    i.classList.remove('yyk-video-item-active');
+                });
+                this.classList.add('yyk-video-item-active');
+                
+                mainVideo.src = videoUrl;
+                if (posterUrl) {
+                    mainVideo.poster = posterUrl;
+                }
+                mainVideo.play();
+            });
+        });
+        
+        const scrollAmount = 100;
+        
+        if (navUp) {
+            navUp.addEventListener('click', function() {
+                if (videoScroll) {
+                    videoScroll.scrollBy({
+                        top: -scrollAmount,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        }
+        
+        if (navDown) {
+            navDown.addEventListener('click', function() {
+                if (videoScroll) {
+                    videoScroll.scrollBy({
+                        top: scrollAmount,
+                        behavior: 'smooth'
+                    });
+                }
+            });
+        }
+    });
+});

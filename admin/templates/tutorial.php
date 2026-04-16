@@ -133,6 +133,193 @@ if (!defined('ABSPATH')) {
                     <code>[yyk_app_list columns="4" count="8"]</code>
                 </div>
             </div>
+            
+            <div class="yyk-tutorial-box">
+                <h3>应用轮播短码</h3>
+                <div class="yyk-code-block">
+                    <code>[yyk_app_carousel]</code>
+                </div>
+                <p>展示应用轮播，使用与归档页相同的样式。</p>
+                
+                <h4>应用轮播短码参数</h4>
+                <table class="yyk-tutorial-table">
+                    <thead>
+                        <tr>
+                            <th>参数</th>
+                            <th>说明</th>
+                            <th>可选值</th>
+                            <th>默认值</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>title</code></td>
+                            <td>标题</td>
+                            <td>文本</td>
+                            <td>热门展示</td>
+                        </tr>
+                        <tr>
+                            <td><code>count</code></td>
+                            <td>显示数量</td>
+                            <td>数字</td>
+                            <td>12</td>
+                        </tr>
+                        <tr>
+                            <td><code>category</code></td>
+                            <td>分类ID</td>
+                            <td>分类ID</td>
+                            <td>-</td>
+                        </tr>
+                        <tr>
+                            <td><code>orderby</code></td>
+                            <td>排序方式</td>
+                            <td>date, title, rand</td>
+                            <td>date</td>
+                        </tr>
+                        <tr>
+                            <td><code>order</code></td>
+                            <td>排序方向</td>
+                            <td>ASC, DESC</td>
+                            <td>DESC</td>
+                        </tr>
+                        <tr>
+                            <td><code>show_view_more</code></td>
+                            <td>显示查看全部</td>
+                            <td>true, false</td>
+                            <td>true</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <h4>应用轮播短码示例</h4>
+                <div class="yyk-code-block">
+                    <code>[yyk_app_carousel]
+[yyk_app_carousel title="精选推荐" count="15"]
+[yyk_app_carousel category="5" orderby="rand"]
+[yyk_app_carousel show_view_more="false"]</code>
+                </div>
+            </div>
+            
+            <div class="yyk-tutorial-box">
+                <h3>视频播放器短码</h3>
+                <div class="yyk-code-block">
+                    <code>[yyk_video_player]</code>
+                </div>
+                <p>展示视频播放器，支持随机展示采集的视频或指定应用ID。</p>
+                
+                <h4>视频播放器短码参数</h4>
+                <table class="yyk-tutorial-table">
+                    <thead>
+                        <tr>
+                            <th>参数</th>
+                            <th>说明</th>
+                            <th>可选值</th>
+                            <th>默认值</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>id</code></td>
+                            <td>应用ID</td>
+                            <td>数字</td>
+                            <td>0</td>
+                        </tr>
+                        <tr>
+                            <td><code>count</code></td>
+                            <td>视频数量</td>
+                            <td>数字</td>
+                            <td>5</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <h4>视频播放器短码示例</h4>
+                <div class="yyk-code-block">
+                    <code>[yyk_video_player]
+[yyk_video_player id="123"]
+[yyk_video_player count="10"]
+[yyk_video_player id="123" count="5"]</code>
+                </div>
+            </div>
+            
+            <div class="yyk-tutorial-box">
+                <h3>Logo轮播短码</h3>
+                <div class="yyk-code-block">
+                    <code>[yyk_logo_carousel]</code>
+                </div>
+                <p>展示Logo轮播，支持自定义Logo或自动采集的应用Logo。</p>
+                
+                <h4>Logo轮播短码参数</h4>
+                <table class="yyk-tutorial-table">
+                    <thead>
+                        <tr>
+                            <th>参数</th>
+                            <th>说明</th>
+                            <th>可选值</th>
+                            <th>默认值</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><code>title</code></td>
+                            <td>标题</td>
+                            <td>文本</td>
+                            <td>-</td>
+                        </tr>
+                        <tr>
+                            <td><code>subtitle</code></td>
+                            <td>副标题</td>
+                            <td>文本</td>
+                            <td>-</td>
+                        </tr>
+                        <tr>
+                            <td><code>show_header</code></td>
+                            <td>显示标题区域</td>
+                            <td>true, false</td>
+                            <td>true</td>
+                        </tr>
+                        <tr>
+                            <td><code>logo_style</code></td>
+                            <td>Logo样式</td>
+                            <td>default, theme, muted, transparent</td>
+                            <td>theme</td>
+                        </tr>
+                        <tr>
+                            <td><code>logo_size</code></td>
+                            <td>Logo大小（像素）</td>
+                            <td>数字</td>
+                            <td>100</td>
+                        </tr>
+                        <tr>
+                            <td><code>custom_logos</code></td>
+                            <td>自定义Logo</td>
+                            <td>文本</td>
+                            <td>-</td>
+                        </tr>
+                        <tr>
+                            <td><code>animation_speed</code></td>
+                            <td>动画速度（秒）</td>
+                            <td>数字</td>
+                            <td>30</td>
+                        </tr>
+                        <tr>
+                            <td><code>pause_on_hover</code></td>
+                            <td>鼠标悬停暂停</td>
+                            <td>true, false</td>
+                            <td>true</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                <h4>Logo轮播短码示例</h4>
+                <div class="yyk-code-block">
+                    <code>[yyk_logo_carousel]
+[yyk_logo_carousel title="合作伙伴" subtitle="我们与以下品牌合作"]
+[yyk_logo_carousel logo_style="default" logo_size="80"]
+[yyk_logo_carousel custom_logos="https://example.com/logo1.png|https://example.com/link1&#10;https://example.com/logo2.png|https://example.com/link2"]
+[yyk_logo_carousel animation_speed="20" pause_on_hover="false"]</code>
+                </div>
+            </div>
         </div>
         
         <!-- 小工具教程 -->
@@ -143,7 +330,7 @@ if (!defined('ABSPATH')) {
                 <h3>添加小工具</h3>
                 <ol>
                     <li>进入 <strong>外观 → 小工具</strong></li>
-                    <li>找到 <strong>YYK 应用下载</strong> 小工具</li>
+                    <li>找到你想要的小工具</li>
                     <li>拖动到你想要的侧边栏区域</li>
                     <li>配置小工具选项</li>
                     <li>点击保存</li>
@@ -151,7 +338,7 @@ if (!defined('ABSPATH')) {
             </div>
             
             <div class="yyk-tutorial-box">
-                <h3>小工具选项</h3>
+                <h3>应用下载列表小工具</h3>
                 <ul>
                     <li><strong>标题</strong> - 小工具显示的标题</li>
                     <li><strong>显示数量</strong> - 显示多少个应用</li>
@@ -159,6 +346,42 @@ if (!defined('ABSPATH')) {
                     <li><strong>布局方式</strong> - 选择网格或轮播布局</li>
                     <li><strong>分类筛选</strong> - 选择特定分类的应用</li>
                     <li><strong>排序方式</strong> - 按日期、标题或随机排序</li>
+                </ul>
+            </div>
+            
+            <div class="yyk-tutorial-box">
+                <h3>应用轮播展示小工具</h3>
+                <ul>
+                    <li><strong>标题</strong> - 小工具显示的标题</li>
+                    <li><strong>分类选择</strong> - 选择特定分类的应用</li>
+                    <li><strong>应用数量</strong> - 显示多少个应用（1-50）</li>
+                    <li><strong>排序方式</strong> - 发布日期/标题/随机</li>
+                    <li><strong>排序方向</strong> - 降序/升序</li>
+                    <li><strong>显示查看全部按钮</strong> - 是否显示查看全部按钮</li>
+                </ul>
+            </div>
+            
+            <div class="yyk-tutorial-box">
+                <h3>应用视频展示小工具</h3>
+                <ul>
+                    <li><strong>标题</strong> - 小工具显示的标题</li>
+                    <li><strong>视频来源</strong> - 随机展示采集的视频/手动添加视频</li>
+                    <li><strong>视频数量</strong> - 显示多少个视频（1-20）</li>
+                    <li><strong>自定义视频</strong> - 每行一个，格式：视频地址|标题</li>
+                </ul>
+            </div>
+            
+            <div class="yyk-tutorial-box">
+                <h3>Logo轮播展示小工具</h3>
+                <ul>
+                    <li><strong>标题</strong> - 小工具显示的标题</li>
+                    <li><strong>副标题</strong> - 小工具显示的副标题</li>
+                    <li><strong>显示标题区域</strong> - 是否显示标题和副标题</li>
+                    <li><strong>Logo样式</strong> - 选择Logo的样式（默认/主题/灰色/透明）</li>
+                    <li><strong>Logo大小</strong> - 设置Logo的大小（像素）</li>
+                    <li><strong>自定义Logo</strong> - 手动添加Logo，每行一个，格式：图片地址|链接地址</li>
+                    <li><strong>动画速度</strong> - 设置轮播动画的速度（秒）</li>
+                    <li><strong>鼠标悬停暂停</strong> - 鼠标悬停时是否暂停轮播</li>
                 </ul>
             </div>
         </div>
